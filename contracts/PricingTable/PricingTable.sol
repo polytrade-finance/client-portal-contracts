@@ -15,6 +15,7 @@ contract PricingTable is IPricingTable, Ownable {
     /**
      * @notice Add a Pricing Item to the Pricing Table
      * @dev Only Owner is authorized to add a Pricing Item
+     * @param pricingId, pricingId (hex format)
      * @param minTenure, minimum tenure expressed in percentage
      * @param maxTenure, maximum tenure expressed in percentage
      * @param maxAdvancedRatio, maximum advanced ratio expressed in percentage
@@ -24,26 +25,28 @@ contract PricingTable is IPricingTable, Ownable {
      * @return returns the id of the pricing Item
      */
     function addPricingItem(
+        bytes2 pricingId,
         uint8 minTenure,
         uint8 maxTenure,
-        uint8 maxAdvancedRatio,
-        uint8 minDiscountRange,
-        uint8 minFactoringFee,
-        uint minAmount
-    ) external onlyOwner returns (uint) {
+        uint16 maxAdvancedRatio,
+        uint16 minDiscountRange,
+        uint16 minFactoringFee,
+        uint minAmount,
+        uint maxAmount
+    ) external onlyOwner {
+        require(!pricingStatus[pricingId], "Already exists, please update");
         PricingItem memory _pricingItem;
 
-        _pricingId++;
         _pricingItem.minTenure = minTenure;
         _pricingItem.maxTenure = maxTenure;
         _pricingItem.minAmount = minAmount;
+        _pricingItem.maxAmount = maxAmount;
         _pricingItem.maxAdvancedRatio = maxAdvancedRatio;
-        _pricingItem.minDiscountRange = minDiscountRange;
+        _pricingItem.minDiscountFee = minDiscountRange;
         _pricingItem.minFactoringFee = minFactoringFee;
-        pricingTable[_pricingId] = _pricingItem;
-        emit NewPricingItem(_pricingId);
-
-        return _pricingId;
+        pricingItems[pricingId] = _pricingItem;
+        pricingStatus[pricingId] = true;
+        emit NewPricingItem(pricingId);
     }
 
     /**
