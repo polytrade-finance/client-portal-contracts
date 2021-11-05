@@ -22,7 +22,7 @@ contract PricingTable is IPricingTable, Ownable {
      * @param minDiscountRange, minimum discount range expressed in percentage
      * @param minFactoringFee, minimum Factoring fee expressed in percentage
      * @param minAmount, minimum amount
-     * @return returns the id of the pricing Item
+     * @param maxAmount, maximum amount
      */
     function addPricingItem(
         bytes2 pricingId,
