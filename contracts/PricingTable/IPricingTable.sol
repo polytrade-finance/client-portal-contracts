@@ -12,6 +12,13 @@ interface IPricingTable {
         uint maxAmount;
     }
 
-    event NewPricingItem(uint id);
-    event RemovedPricingItem(uint id);
+    function getPricingItem(bytes2 id)
+        external
+        view
+        returns (PricingItem memory);
+
+    function isPricingItemValid(bytes2 id) external view returns (bool);
+
+    event NewPricingItem(bytes2 id);
+    event RemovedPricingItem(bytes2 id);
 }
