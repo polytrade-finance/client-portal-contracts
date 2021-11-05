@@ -54,8 +54,9 @@ contract PricingTable is IPricingTable, Ownable {
      * @dev Only Owner is authorized to add a Pricing Item
      * @param id, id of the pricing Item
      */
-    function removePricingItem(uint id) external onlyOwner {
-        delete pricingTable[id];
+    function removePricingItem(bytes2 id) external onlyOwner {
+        delete pricingItems[id];
+        pricingStatus[id] = false;
         emit RemovedPricingItem(id);
     }
 
@@ -64,11 +65,21 @@ contract PricingTable is IPricingTable, Ownable {
      * @param id, id of the pricing Item
      * @return returns the PricingItem (struct)
      */
-    function getPricingItem(uint id)
+    function getPricingItem(bytes2 id)
         external
         view
+        override
         returns (PricingItem memory)
     {
-        return pricingTable[id];
+        return pricingItems[id];
+    }
+
+    function isPricingItemValid(bytes2 id)
+        external
+        view
+        override
+        returns (bool)
+    {
+        return pricingStatus[id];
     }
 }
