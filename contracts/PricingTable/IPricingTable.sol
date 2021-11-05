@@ -9,6 +9,7 @@ interface IPricingTable {
         uint16 minDiscountFee;
         uint16 minFactoringFee;
         uint minAmount;
+        uint maxAmount;
     }
 
     event NewPricingItem(uint id);
