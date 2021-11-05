@@ -5,9 +5,9 @@ interface IPricingTable {
     struct PricingItem {
         uint8 minTenure;
         uint8 maxTenure;
-        uint8 maxAdvancedRatio;
-        uint8 minDiscountRange;
-        uint8 minFactoringFee;
+        uint16 maxAdvancedRatio;
+        uint16 minDiscountFee;
+        uint16 minFactoringFee;
         uint minAmount;
     }
 
