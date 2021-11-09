@@ -43,19 +43,14 @@ struct OfferItem {
     OfferParams params;
 }
 
-//pricingId
-//disbursingAdvanceDate
-
-struct OfferItemAdvanceAllocated {
-    string polytradeInvoiceNo;
-    uint clientCreateDate;
-    uint actualAmount;
-    uint disbursingAdvanceDate;
-    uint advancedAmount;
-    uint reserveHeldAmount;
-    uint dueDate;
-    uint amountDue;
-    uint totalFee;
+struct OfferParams {
+    uint8 gracePeriod;
+    uint8 tenure;
+    uint16 factoringFee;
+    uint16 discountFee;
+    uint16 advanceFee;
+    uint invoiceAmount;
+    uint availableAmount;
 }
 
 struct OfferItemPaymentReceived {
