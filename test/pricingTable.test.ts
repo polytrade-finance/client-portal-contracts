@@ -105,14 +105,10 @@ describe("PricingTable", function () {
 
     console.log((await offers.Offers(1)).toString());
 
-    const date = Math.floor(Date.now() / 1000);
-    await offers.reserveRefund(2, date + 60 * 60, 2);
+    await offers.reserveRefund(2, timestamp + 60 * 60, 2);
   });
 
   it("Should create second Offer with Invoice != Available", async () => {
-    console.log("------");
-    console.log("------");
-    console.log("------");
     await offers.createOffer("0x41A2", {
       advanceFee: 8000,
       discountFee: 750,
@@ -123,9 +119,7 @@ describe("PricingTable", function () {
       tenure: 60,
       // tokenAddress: "0x2e3c1bAe5D365D1dcd0EaC91B00d54518717Ee06",
     });
-    const date = Math.floor(Date.now() / 1000);
 
-    await offers.reserveRefund(3, date - 24 * 60 * 60 * 10, 2750);
+    await offers.reserveRefund(3, timestamp - ONE_DAY * 8, 2750);
   });
-  // 89345.78;
 });
