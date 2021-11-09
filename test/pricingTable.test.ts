@@ -5,6 +5,13 @@ import { Offers, PricingTable } from "../typechain";
 describe("PricingTable", function () {
   let pricingTable: PricingTable;
   let offers: Offers;
+  let timestamp: number;
+  beforeEach(async () => {
+    timestamp = (await ethers.provider.getBlock(ethers.provider.blockNumber))
+      .timestamp;
+    console.log(timestamp);
+  });
+
   it("Should return the new greeting once it's changed", async function () {
     const PricingTable = await ethers.getContractFactory("PricingTable");
     pricingTable = await PricingTable.deploy();
@@ -23,6 +30,18 @@ describe("PricingTable", function () {
       .then((tx) => tx.wait());
   });
 
+  it("Should add a pricing Item", async () => {
+    await pricingTable
+      .addPricingItem("0x57A2", 60, 90, 9000, 375, 105, 8000000, 10000000)
+      .then((tx) => tx.wait());
+  });
+
+  it("Should add a pricing Item", async () => {
+    await pricingTable
+      .addPricingItem("0x41A2", 60, 89, 9000, 700, 173, 500000, 1000000)
+      .then((tx) => tx.wait());
+  });
+
   it("Should return a pricingItem", async () => {
     const pricingItem = await pricingTable.getPricingItem("0x01a2");
 
@@ -32,6 +51,7 @@ describe("PricingTable", function () {
     expect(pricingItem.minDiscountFee).to.equal(1);
     expect(pricingItem.minFactoringFee).to.equal(1);
     expect(pricingItem.minAmount).to.equal(1);
+    expect(pricingItem.maxAmount).to.equal(1);
   });
 
   it("Should remove a pricingItem", async () => {
@@ -67,6 +87,44 @@ describe("PricingTable", function () {
     console.log((await offers.Offers(1)).toString());
 
     const date = Math.floor(Date.now() / 1000);
-    await offers.offerReserveFundAllocated(1, date + 60 * 60, 2);
+    await offers.reserveRefund(1, date + 60 * 60, 2);
   });
+
+  it("Should create second Offer with Invoice == Available", async () => {
+    await offers.createOffer("0x57A2", {
+      advanceFee: 8800,
+      discountFee: 390,
+      factoringFee: 135,
+      gracePeriod: 1,
+      availableAmount: 8934578, // 89345.78
+      invoiceAmount: 8934578, // 89345.78
+      tenure: 79,
+      // tokenAddress: "0x2e3c1bAe5D365D1dcd0EaC91B00d54518717Ee06",
+    });
+
+    console.log((await offers.Offers(1)).toString());
+
+    const date = Math.floor(Date.now() / 1000);
+    await offers.reserveRefund(2, date + 60 * 60, 2);
+  });
+
+  it("Should create second Offer with Invoice != Available", async () => {
+    console.log("------");
+    console.log("------");
+    console.log("------");
+    await offers.createOffer("0x41A2", {
+      advanceFee: 8000,
+      discountFee: 750,
+      factoringFee: 180,
+      gracePeriod: 2,
+      invoiceAmount: 1000000, // 89345.78
+      availableAmount: 900000, // 89345.78
+      tenure: 60,
+      // tokenAddress: "0x2e3c1bAe5D365D1dcd0EaC91B00d54518717Ee06",
+    });
+    const date = Math.floor(Date.now() / 1000);
+
+    await offers.reserveRefund(3, date - 24 * 60 * 60 * 10, 2750);
+  });
+  // 89345.78;
 });
