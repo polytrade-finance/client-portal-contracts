@@ -10,7 +10,7 @@ contract PricingTable is IPricingTable, Ownable {
     mapping(bytes2 => PricingItem) private pricingItems;
     mapping(bytes2 => bool) private pricingStatus;
 
-    uint private _pricingId;
+    //    bytes2 private _pricingId;
 
     /**
      * @notice Add a Pricing Item to the Pricing Table

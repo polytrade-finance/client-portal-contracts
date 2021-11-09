@@ -1,9 +1,10 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { PricingTable } from "../typechain";
+import { Offers, PricingTable } from "../typechain";
 
 describe("PricingTable", function () {
   let pricingTable: PricingTable;
+  let offers: Offers;
   it("Should return the new greeting once it's changed", async function () {
     const PricingTable = await ethers.getContractFactory("PricingTable");
     pricingTable = await PricingTable.deploy();
@@ -45,5 +46,27 @@ describe("PricingTable", function () {
     expect(pricingItem.minDiscountFee).to.equal(0);
     expect(pricingItem.minFactoringFee).to.equal(0);
     expect(pricingItem.minAmount).to.equal(0);
+  });
+
+  it("Should deploy Offer Contract", async () => {
+    const Offers = await ethers.getContractFactory("Offers");
+    offers = await Offers.deploy(pricingTable.address);
+    await offers.deployed();
+
+    await offers.createOffer("0x606a", {
+      advanceFee: 90,
+      discountFee: 75,
+      factoringFee: 20,
+      gracePeriod: 1,
+      availableAmount: 9000,
+      invoiceAmount: 9000,
+      tenure: 60,
+      // tokenAddress: "0x2e3c1bAe5D365D1dcd0EaC91B00d54518717Ee06",
+    });
+
+    console.log((await offers.Offers(1)).toString());
+
+    const date = Math.floor(Date.now() / 1000);
+    await offers.offerReserveFundAllocated(1, date + 60 * 60, 2);
   });
 });
