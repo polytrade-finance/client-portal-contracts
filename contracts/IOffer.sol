@@ -63,20 +63,4 @@ struct OfferRefunded {
     uint rewards;
 }
 
-interface IOffer {
-    function getAmountsForTransfers(uint _id)
-        external
-        returns (
-            address _tokenAddress,
-            uint _amount,
-            address _address
-        );
-
-    function getAmountsForFinish(uint _id)
-        external
-        returns (uint _amount, address _address);
-
-    function changeStatusFromTreasury(uint _id, uint8 status)
-        external
-        returns (bool);
-}
+interface IOffer {}
