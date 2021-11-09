@@ -41,6 +41,7 @@ struct OfferItem {
     uint reserve;
     uint disbursingAdvanceDate;
     OfferParams params;
+    OfferRefunded refunded;
 }
 
 struct OfferParams {
@@ -53,25 +54,11 @@ struct OfferParams {
     uint availableAmount;
 }
 
-struct OfferItemPaymentReceived {
-    uint paymentDate;
-    uint receivedAmount;
-    uint unpaidAmount;
-    string paymentRef;
-}
-
-//dueDate
-//numberOfLateDays
-//Total Fee
-//latePercentage
-//netAmount payable to client
-//toPayTradeTokens
-
-struct OfferItemRefunded {
+struct OfferRefunded {
     uint dueDate;
     uint16 lateFee;
-    uint16 numberOfLateDays;
-    uint totalFee;
+    uint24 numberOfLateDays;
+    uint totalCalculatedFees;
     uint netAmount;
     uint rewards;
 }
