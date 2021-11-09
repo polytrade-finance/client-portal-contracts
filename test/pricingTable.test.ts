@@ -1,6 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { Offers, PricingTable } from "../typechain";
+import { ONE_DAY } from "./helpers";
 
 describe("PricingTable", function () {
   let pricingTable: PricingTable;
