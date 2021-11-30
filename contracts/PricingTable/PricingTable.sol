@@ -7,42 +7,46 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @title Princing Table
 /// @author Polytrade
 contract PricingTable is IPricingTable, Ownable {
-    mapping(uint => PricingItem) private pricingTable;
+    mapping(bytes2 => PricingItem) private pricingItems;
+    mapping(bytes2 => bool) private pricingStatus;
 
-    uint private _pricingId;
+    //    bytes2 private _pricingId;
 
     /**
      * @notice Add a Pricing Item to the Pricing Table
      * @dev Only Owner is authorized to add a Pricing Item
+     * @param pricingId, pricingId (hex format)
      * @param minTenure, minimum tenure expressed in percentage
      * @param maxTenure, maximum tenure expressed in percentage
      * @param maxAdvancedRatio, maximum advanced ratio expressed in percentage
      * @param minDiscountRange, minimum discount range expressed in percentage
      * @param minFactoringFee, minimum Factoring fee expressed in percentage
      * @param minAmount, minimum amount
-     * @return returns the id of the pricing Item
+     * @param maxAmount, maximum amount
      */
     function addPricingItem(
+        bytes2 pricingId,
         uint8 minTenure,
         uint8 maxTenure,
-        uint8 maxAdvancedRatio,
-        uint8 minDiscountRange,
-        uint8 minFactoringFee,
-        uint minAmount
-    ) external onlyOwner returns (uint) {
+        uint16 maxAdvancedRatio,
+        uint16 minDiscountRange,
+        uint16 minFactoringFee,
+        uint minAmount,
+        uint maxAmount
+    ) external onlyOwner {
+        require(!pricingStatus[pricingId], "Already exists, please update");
         PricingItem memory _pricingItem;
 
-        _pricingId++;
         _pricingItem.minTenure = minTenure;
         _pricingItem.maxTenure = maxTenure;
         _pricingItem.minAmount = minAmount;
+        _pricingItem.maxAmount = maxAmount;
         _pricingItem.maxAdvancedRatio = maxAdvancedRatio;
-        _pricingItem.minDiscountRange = minDiscountRange;
+        _pricingItem.minDiscountFee = minDiscountRange;
         _pricingItem.minFactoringFee = minFactoringFee;
-        pricingTable[_pricingId] = _pricingItem;
-        emit NewPricingItem(_pricingId);
-
-        return _pricingId;
+        pricingItems[pricingId] = _pricingItem;
+        pricingStatus[pricingId] = true;
+        emit NewPricingItem(pricingId);
     }
 
     /**
@@ -50,8 +54,9 @@ contract PricingTable is IPricingTable, Ownable {
      * @dev Only Owner is authorized to add a Pricing Item
      * @param id, id of the pricing Item
      */
-    function removePricingItem(uint id) external onlyOwner {
-        delete pricingTable[id];
+    function removePricingItem(bytes2 id) external onlyOwner {
+        delete pricingItems[id];
+        pricingStatus[id] = false;
         emit RemovedPricingItem(id);
     }
 
@@ -60,11 +65,21 @@ contract PricingTable is IPricingTable, Ownable {
      * @param id, id of the pricing Item
      * @return returns the PricingItem (struct)
      */
-    function getPricingItem(uint id)
+    function getPricingItem(bytes2 id)
         external
         view
+        override
         returns (PricingItem memory)
     {
-        return pricingTable[id];
+        return pricingItems[id];
+    }
+
+    function isPricingItemValid(bytes2 id)
+        external
+        view
+        override
+        returns (bool)
+    {
+        return pricingStatus[id];
     }
 }

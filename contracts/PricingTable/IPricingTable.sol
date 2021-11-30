@@ -5,12 +5,20 @@ interface IPricingTable {
     struct PricingItem {
         uint8 minTenure;
         uint8 maxTenure;
-        uint8 maxAdvancedRatio;
-        uint8 minDiscountRange;
-        uint8 minFactoringFee;
+        uint16 maxAdvancedRatio;
+        uint16 minDiscountFee;
+        uint16 minFactoringFee;
         uint minAmount;
+        uint maxAmount;
     }
 
-    event NewPricingItem(uint id);
-    event RemovedPricingItem(uint id);
+    function getPricingItem(bytes2 id)
+        external
+        view
+        returns (PricingItem memory);
+
+    function isPricingItemValid(bytes2 id) external view returns (bool);
+
+    event NewPricingItem(bytes2 id);
+    event RemovedPricingItem(bytes2 id);
 }
