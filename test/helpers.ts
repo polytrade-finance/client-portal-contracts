@@ -11,3 +11,8 @@ export async function increaseTime(duration: number) {
   await ethers.provider.send("evm_increaseTime", [duration]);
   await ethers.provider.send("evm_mine", []);
 }
+
+export async function getTimestamp(): Promise<number> {
+  const block = await ethers.provider.getBlock(ethers.provider.blockNumber);
+  return block.timestamp;
+}
