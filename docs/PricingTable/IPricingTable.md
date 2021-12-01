@@ -1,6 +1,4 @@
-# Polytrade - Smart contracts - Solidity
-
-## `PricingTable`
+## `IPricingTable`
 
 ### `addPricingItem(bytes2 pricingId, uint8 minTenure, uint8 maxTenure, uint16 maxAdvancedRatio, uint16 minDiscountRange, uint16 minFactoringFee, uint256 minAmount, uint256 maxAmount)` (external)
 
@@ -28,22 +26,24 @@ Returns the pricing Item
 
 Returns if the pricing Item is valid
 
-## `Offers`
+### `NewPricingItem(struct IPricingTable.PricingItem id)`
 
-### `constructor(address pricingAddress)` (public)
+### `UpdatedPricingItem(struct IPricingTable.PricingItem id)`
 
-### `createOffer(bytes2 pricingId, struct OfferParams params) → uint256` (public)
+### `RemovedPricingItem(bytes2 id)`
 
-Create an offer, check if it fits pricingItem requirements
+### `PricingItem`
 
-calls \_checkParams and returns Error if params don't fit with the pricingID
-only `Owner` can create a new offer
-emits OfferCreated event
+uint8 minTenure
 
-### `reserveRefund(uint256 offerId, uint256 dueDate, uint16 lateFee)` (public)
+uint8 maxTenure
 
-Send the reserve Refund
+uint16 maxAdvancedRatio
 
-checks if Offer exists and if not refunded yet
-only `Owner` can call reserveRefund
-emits OfferReserveRefunded event
+uint16 minDiscountFee
+
+uint16 minFactoringFee
+
+uint256 minAmount
+
+uint256 maxAmount

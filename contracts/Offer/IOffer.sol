@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.10;
 
 /// Tenure is not within minimum and maximum authorized
 /// @param tenure, actual tenure
@@ -34,9 +34,6 @@ error InvalidInvoiceAmount(uint invoiceAmount, uint minAmount, uint maxAmount);
 error InvalidAvailableAmount(uint availableAmount, uint invoiceAmount);
 
 struct OfferItem {
-    uint8 status;
-    address borrowerAddress;
-    address tokenAddress;
     uint advancedAmount;
     uint reserve;
     uint disbursingAdvanceDate;
@@ -50,6 +47,8 @@ struct OfferParams {
     uint16 factoringFee;
     uint16 discountFee;
     uint16 advanceFee;
+    address treasuryAddress;
+    address stableAddress;
     uint invoiceAmount;
     uint availableAmount;
 }
@@ -63,4 +62,7 @@ struct OfferRefunded {
     uint rewards;
 }
 
-interface IOffer {}
+interface IOffer {
+    event OfferCreated(uint indexed offerId, bytes2 pricingId);
+    event ReserveRefunded(uint indexed offerId, uint refundedAmount);
+}

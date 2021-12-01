@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.9;
+pragma solidity ^0.8.10;
 
 import "./IPricingTable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -7,10 +7,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @title Princing Table
 /// @author Polytrade
 contract PricingTable is IPricingTable, Ownable {
-    mapping(bytes2 => PricingItem) private pricingItems;
-    mapping(bytes2 => bool) private pricingStatus;
-
-    //    bytes2 private _pricingId;
+    mapping(bytes2 => PricingItem) private _pricingItems;
+    mapping(bytes2 => bool) private _pricingStatus;
 
     /**
      * @notice Add a Pricing Item to the Pricing Table
@@ -34,7 +32,7 @@ contract PricingTable is IPricingTable, Ownable {
         uint minAmount,
         uint maxAmount
     ) external onlyOwner {
-        require(!pricingStatus[pricingId], "Already exists, please update");
+        require(!_pricingStatus[pricingId], "Already exists, please update");
         PricingItem memory _pricingItem;
 
         _pricingItem.minTenure = minTenure;
@@ -44,9 +42,45 @@ contract PricingTable is IPricingTable, Ownable {
         _pricingItem.maxAdvancedRatio = maxAdvancedRatio;
         _pricingItem.minDiscountFee = minDiscountRange;
         _pricingItem.minFactoringFee = minFactoringFee;
-        pricingItems[pricingId] = _pricingItem;
-        pricingStatus[pricingId] = true;
-        emit NewPricingItem(pricingId);
+        _pricingItems[pricingId] = _pricingItem;
+        _pricingStatus[pricingId] = true;
+        emit NewPricingItem(_pricingItems[pricingId]);
+    }
+
+    /**
+     * @notice Update an existing Pricing Item
+     * @dev Only Owner is authorized to update a Pricing Item
+     * @param pricingId, pricingId (hex format)
+     * @param minTenure, minimum tenure expressed in percentage
+     * @param maxTenure, maximum tenure expressed in percentage
+     * @param maxAdvancedRatio, maximum advanced ratio expressed in percentage
+     * @param minDiscountRange, minimum discount range expressed in percentage
+     * @param minFactoringFee, minimum Factoring fee expressed in percentage
+     * @param minAmount, minimum amount
+     * @param maxAmount, maximum amount
+     */
+    function updatePricingItem(
+        bytes2 pricingId,
+        uint8 minTenure,
+        uint8 maxTenure,
+        uint16 maxAdvancedRatio,
+        uint16 minDiscountRange,
+        uint16 minFactoringFee,
+        uint minAmount,
+        uint maxAmount,
+        bool status
+    ) external onlyOwner {
+        require(_pricingStatus[pricingId], "Invalid Pricing Item");
+
+        _pricingItems[pricingId].minTenure = minTenure;
+        _pricingItems[pricingId].maxTenure = maxTenure;
+        _pricingItems[pricingId].minAmount = minAmount;
+        _pricingItems[pricingId].maxAmount = maxAmount;
+        _pricingItems[pricingId].maxAdvancedRatio = maxAdvancedRatio;
+        _pricingItems[pricingId].minDiscountFee = minDiscountRange;
+        _pricingItems[pricingId].minFactoringFee = minFactoringFee;
+        _pricingStatus[pricingId] = status;
+        emit UpdatedPricingItem(_pricingItems[pricingId]);
     }
 
     /**
@@ -55,8 +89,8 @@ contract PricingTable is IPricingTable, Ownable {
      * @param id, id of the pricing Item
      */
     function removePricingItem(bytes2 id) external onlyOwner {
-        delete pricingItems[id];
-        pricingStatus[id] = false;
+        delete _pricingItems[id];
+        _pricingStatus[id] = false;
         emit RemovedPricingItem(id);
     }
 
@@ -71,15 +105,20 @@ contract PricingTable is IPricingTable, Ownable {
         override
         returns (PricingItem memory)
     {
-        return pricingItems[id];
+        return _pricingItems[id];
     }
 
+    /**
+     * @notice Returns if the pricing Item is valid
+     * @param id, id of the pricing Item
+     * @return returns boolean if pricing is valid or not
+     */
     function isPricingItemValid(bytes2 id)
         external
         view
         override
         returns (bool)
     {
-        return pricingStatus[id];
+        return _pricingStatus[id];
     }
 }
