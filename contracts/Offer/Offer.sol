@@ -219,15 +219,23 @@ contract Offers is IOffer, Ownable {
         uint16 discountFee,
         uint8 tenure
     ) private view returns (uint) {
-        return (((advancedAmount * discountFee) / 365) * tenure) / precision;
+        return (((advancedAmount * discountFee) / 365) * tenure) / _precision;
     }
 
+    /**
+     * @notice calculate the Late Amount (((lateFee * advancedAmount) / 365) * lateDays)
+     * @dev calculate based on `(((lateFee * advancedAmount) / 365) * lateDays) / _precision` formula
+     * @param advancedAmount, amount for the advanced amount
+     * @param lateFee, ratio for the late Fee
+     * @param lateDays, number of late days
+     * @return uint, Late Amount
+     */
     function _calculateLateAmount(
+        uint advancedAmount,
         uint16 lateFee,
-        uint24 lateDays,
-        uint advancedAmount
+        uint24 lateDays
     ) private view returns (uint) {
-        return (((lateFee * advancedAmount) / 365) * lateDays) / precision;
+        return (((lateFee * advancedAmount) / 365) * lateDays) / _precision;
     }
 
     function _calculateLateDays(uint dueDate, uint gracePeriod)
