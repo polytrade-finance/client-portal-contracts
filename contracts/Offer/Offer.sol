@@ -21,6 +21,38 @@ contract Offers is IOffer, Ownable {
     }
 
     /**
+     * @notice check if params fit with the pricingItem
+     * @dev checks every params and returns a custom Error
+     * @param pricingId, Id of the pricing Item
+     * @param tenure, tenure expressed in number of days
+     * @param advanceFee, ratio for the advance Fee
+     * @param discountFee, ratio for the discount Fee
+     * @param factoringFee, ratio for the factoring Fee
+     * @param invoiceAmount, amount for the invoice
+     * @param availableAmount, amount for the available amount
+     */
+    function checkOfferValidity(
+        bytes2 pricingId,
+        uint8 tenure,
+        uint16 advanceFee,
+        uint16 discountFee,
+        uint16 factoringFee,
+        uint invoiceAmount,
+        uint availableAmount
+    ) external view returns (bool) {
+        return
+            _checkParams(
+                pricingId,
+                tenure,
+                advanceFee,
+                discountFee,
+                factoringFee,
+                invoiceAmount,
+                availableAmount
+            );
+    }
+
+    /**
      * @notice Create an offer, check if it fits pricingItem requirements and send Advance to treasury
      * @dev calls _checkParams and returns Error if params don't fit with the pricingID
      * @dev only `Owner` can create a new offer
