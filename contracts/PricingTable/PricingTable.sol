@@ -7,10 +7,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @title Princing Table
 /// @author Polytrade
 contract PricingTable is IPricingTable, Ownable {
-    mapping(bytes2 => PricingItem) private pricingItems;
-    mapping(bytes2 => bool) private pricingStatus;
-
-    //    bytes2 private _pricingId;
+    mapping(bytes2 => PricingItem) private _pricingItems;
+    mapping(bytes2 => bool) private _pricingStatus;
 
     /**
      * @notice Add a Pricing Item to the Pricing Table
