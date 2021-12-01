@@ -62,4 +62,7 @@ struct OfferRefunded {
     uint rewards;
 }
 
-interface IOffer {}
+interface IOffer {
+    event OfferCreated(uint indexed offerId, bytes2 pricingId);
+    event ReserveRefunded(uint indexed offerId, uint refundedAmount);
+}
