@@ -238,6 +238,13 @@ contract Offers is IOffer, Ownable {
         return (((lateFee * advancedAmount) / 365) * lateDays) / _precision;
     }
 
+    /**
+     * @notice calculate the number of Late Days (Now - dueDate - gracePeriod)
+     * @dev calculate based on `(block.timestamp - dueDate - gracePeriod) / 1 days` formula
+     * @param dueDate, due date -> epoch timestamps format
+     * @param gracePeriod, grace period -> expressed in seconds
+     * @return uint24, number of late Days
+     */
     function _calculateLateDays(uint dueDate, uint gracePeriod)
         private
         view
