@@ -1,17 +1,35 @@
+import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Offers, PricingTable } from "../typechain";
+import { Offers, PricingTable, Token } from "../typechain";
 import { getTimestamp, increaseTime, ONE_DAY } from "./helpers";
+import { parseUnits } from "ethers/lib/utils";
 
 describe("PricingTable", function () {
   let pricingTable: PricingTable;
   let offers: Offers;
+  let tether: Token;
   let timestamp: number;
-  beforeEach(async () => {
-    timestamp = await getTimestamp();
+  let accounts: SignerWithAddress[];
+  let addresses: string[];
+  let treasury: string;
+
+  before(async () => {
+    accounts = await ethers.getSigners();
+    addresses = accounts.map((account: SignerWithAddress) => account.address);
+    treasury = addresses[2];
   });
 
-  it("Should return the new greeting once it's changed", async function () {
+  beforeEach(async () => {
+    timestamp = await getTimestamp();
+    if (tether) {
+      await tether
+        .connect(accounts[2])
+        .transfer(addresses[1], await tether.balanceOf(treasury));
+    }
+  });
+
+  it("Should return the new PrincingTable once deployed", async function () {
     const PricingTable = await ethers.getContractFactory("PricingTable");
     pricingTable = await PricingTable.deploy();
     await pricingTable.deployed();
@@ -165,11 +183,32 @@ describe("PricingTable", function () {
     expect(pricingItem.minAmount).to.equal(0);
   });
 
+  it("Should return Tether once deployed", async function () {
+    const Tether = await ethers.getContractFactory("Token");
+    tether = await Tether.deploy("Tether", "USDT", 6);
+    await tether.deployed();
+  });
+
   it("Should deploy Offer Contract", async () => {
     const Offers = await ethers.getContractFactory("Offers");
     offers = await Offers.deploy(pricingTable.address);
     await offers.deployed();
+  });
 
+  it("Should send 100,000,000 USDT to Offer Contract", async () => {
+    await tether.transfer(offers.address, parseUnits("1000000", 6));
+    expect(await tether.balanceOf(offers.address)).to.equal(
+      parseUnits("1000000", 6)
+    );
+  });
+
+  it("Should check validity of the offer", async () => {
+    expect(
+      await offers.checkOfferValidity("0x606a", 60, 90, 75, 20, 9000, 9000)
+    ).to.equal(true);
+  });
+
+  it("Should create first offer", async () => {
     await offers.createOffer("0x606a", {
       advanceFee: 90,
       discountFee: 75,
@@ -178,11 +217,14 @@ describe("PricingTable", function () {
       availableAmount: 9000,
       invoiceAmount: 9000,
       tenure: 60,
-      // tokenAddress: "0x2e3c1bAe5D365D1dcd0EaC91B00d54518717Ee06",
+      stableAddress: tether.address,
+      treasuryAddress: treasury,
     });
 
     const date = Math.floor(Date.now() / 1000);
     await offers.reserveRefund(1, date + 60 * 60, 2);
+
+    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("89.82", 6));
   });
 
   it("Should create Offer(2) scenario 1 grade A with Invoice == Available", async (offerId: number = 2) => {
@@ -194,6 +236,8 @@ describe("PricingTable", function () {
       availableAmount: 8934578,
       invoiceAmount: 8934578,
       tenure: 79,
+      stableAddress: tether.address,
+      treasuryAddress: treasury,
     });
 
     const offer = await offers.offers(offerId);
@@ -208,6 +252,10 @@ describe("PricingTable", function () {
     expect(offer.params.advanceFee).to.equal(8800);
     expect(offer.params.invoiceAmount).to.equal("8934578");
     expect(offer.params.availableAmount).to.equal("8934578");
+
+    expect(await tether.balanceOf(treasury)).to.equal(
+      parseUnits("78624.28", 6)
+    );
   });
 
   it("Should reserveRefund for Offer(2) scenario 1 grade A with Invoice == Available", async (offerId: number = 2) => {
@@ -219,6 +267,8 @@ describe("PricingTable", function () {
     expect(offer.refunded.totalCalculatedFees).to.equal("186983");
     expect(offer.refunded.netAmount).to.equal("885167");
     expect(offer.refunded.rewards).to.equal("0");
+
+    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("8851.67", 6));
   });
 
   it("Should create Offer(3) scenario 2 grade A with Invoice == Available", async (offerId: number = 3) => {
@@ -230,6 +280,8 @@ describe("PricingTable", function () {
       availableAmount: 8934578,
       invoiceAmount: 8934578,
       tenure: 45,
+      stableAddress: tether.address,
+      treasuryAddress: treasury,
     });
 
     const offer = await offers.offers(offerId);
@@ -244,6 +296,10 @@ describe("PricingTable", function () {
     expect(offer.params.advanceFee).to.equal(8500);
     expect(offer.params.invoiceAmount).to.equal("8934578");
     expect(offer.params.availableAmount).to.equal("8934578");
+
+    expect(await tether.balanceOf(treasury)).to.equal(
+      parseUnits("75943.91", 6)
+    );
   });
 
   it("Should reserveRefund for Offer(3) scenario 2 grade A with Invoice == Available", async (offerId: number = 3) => {
@@ -255,6 +311,8 @@ describe("PricingTable", function () {
     expect(offer.refunded.totalCalculatedFees).to.equal("106587");
     expect(offer.refunded.netAmount).to.equal("1233600");
     expect(offer.refunded.rewards).to.equal("0");
+
+    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("12336.0", 6));
   });
 
   it("Should create Offer(4) scenario 3 grade B with Invoice == Available", async (offerId: number = 4) => {
@@ -266,6 +324,8 @@ describe("PricingTable", function () {
       availableAmount: 8934578,
       invoiceAmount: 8934578,
       tenure: 100,
+      stableAddress: tether.address,
+      treasuryAddress: treasury,
     });
 
     const offer = await offers.offers(offerId);
@@ -280,6 +340,10 @@ describe("PricingTable", function () {
     expect(offer.params.advanceFee).to.equal(7000);
     expect(offer.params.invoiceAmount).to.equal("8934578");
     expect(offer.params.availableAmount).to.equal("8934578");
+
+    expect(await tether.balanceOf(treasury)).to.equal(
+      parseUnits("62542.04", 6)
+    );
   });
 
   it("Should reserveRefund Offer(4) scenario 3 grade B with Invoice == Available", async (offerId: number = 4) => {
@@ -291,6 +355,8 @@ describe("PricingTable", function () {
     expect(offer.refunded.totalCalculatedFees).to.equal("304974");
     expect(offer.refunded.netAmount).to.equal("2375400");
     expect(offer.refunded.rewards).to.equal("0");
+
+    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("23754.0", 6));
   });
 
   it("Should fail creating Offer(5) scenario 4 grade B with Invoice == Available", async () => {
@@ -303,6 +369,8 @@ describe("PricingTable", function () {
         availableAmount: 8934578,
         invoiceAmount: 8934578,
         tenure: 22,
+        stableAddress: tether.address,
+        treasuryAddress: treasury,
       })
     ).to.be.revertedWith("InvalidFactoringFee(40, 50)");
   });
@@ -316,6 +384,8 @@ describe("PricingTable", function () {
       invoiceAmount: 1000000,
       availableAmount: 900000,
       tenure: 60,
+      stableAddress: tether.address,
+      treasuryAddress: treasury,
     });
 
     const offer = await offers.offers(offerId);
@@ -330,6 +400,8 @@ describe("PricingTable", function () {
     expect(offer.params.advanceFee).to.equal(8000);
     expect(offer.params.invoiceAmount).to.equal("1000000");
     expect(offer.params.availableAmount).to.equal("900000");
+
+    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("7200.0", 6));
   });
 
   it("Should reserveRefund for Offer(5) scenario 1 grade B with Invoice != Available", async (offerId: number = 5) => {
@@ -344,6 +416,8 @@ describe("PricingTable", function () {
     expect(offer.refunded.totalCalculatedFees).to.equal("31215");
     expect(offer.refunded.netAmount).to.equal("248785");
     expect(offer.refunded.rewards).to.equal("0");
+
+    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("2487.85", 6));
   });
 
   it("Should create Offer(6) scenario 2 grade B with Invoice != Available", async (offerId: number = 6) => {
@@ -355,6 +429,8 @@ describe("PricingTable", function () {
       invoiceAmount: 1000000,
       availableAmount: 900000,
       tenure: 95,
+      stableAddress: tether.address,
+      treasuryAddress: treasury,
     });
     const offer = await offers.offers(offerId);
     expect(offer.advancedAmount).to.equal("801000");
@@ -368,6 +444,8 @@ describe("PricingTable", function () {
     expect(offer.params.advanceFee).to.equal(8900);
     expect(offer.params.invoiceAmount).to.equal("1000000");
     expect(offer.params.availableAmount).to.equal("900000");
+
+    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("8010.0", 6));
   });
 
   it("Should reserveRefund for Offer(6) scenario 1 grade B with Invoice != Available", async (offerId: number = 6) => {
@@ -379,6 +457,8 @@ describe("PricingTable", function () {
     expect(offer.refunded.totalCalculatedFees).to.equal("41978");
     expect(offer.refunded.netAmount).to.equal("157022");
     expect(offer.refunded.rewards).to.equal("0");
+
+    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("1570.22", 6));
   });
 
   it("Should fail create Offer scenario 3 grade C with InvalidDiscountFee", async () => {
@@ -391,6 +471,8 @@ describe("PricingTable", function () {
         invoiceAmount: 1000000,
         availableAmount: 900000,
         tenure: 120,
+        stableAddress: tether.address,
+        treasuryAddress: treasury,
       })
     ).to.be.revertedWith("InvalidDiscountFee(730, 800)");
   });
@@ -404,6 +486,8 @@ describe("PricingTable", function () {
       invoiceAmount: 1000000,
       availableAmount: 900000,
       tenure: 30,
+      stableAddress: tether.address,
+      treasuryAddress: treasury,
     });
 
     const offer = await offers.offers(offerId);
@@ -418,6 +502,8 @@ describe("PricingTable", function () {
     expect(offer.params.advanceFee).to.equal(9000);
     expect(offer.params.invoiceAmount).to.equal("1000000");
     expect(offer.params.availableAmount).to.equal("900000");
+
+    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("8100.0", 6));
   });
 
   it("Should reserveRefund for Offer(7) scenario 4 grade C with Invoice != Available", async (offerId: number = 7) => {
@@ -429,6 +515,8 @@ describe("PricingTable", function () {
     expect(offer.refunded.totalCalculatedFees).to.equal("24959");
     expect(offer.refunded.netAmount).to.equal("165041");
     expect(offer.refunded.rewards).to.equal("0");
+
+    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("1650.41", 6));
   });
 
   it("Should fail reserveRefund if already refunded for Offer(7) ", async (offerId: number = 7) => {
@@ -453,6 +541,8 @@ describe("PricingTable", function () {
         invoiceAmount: 1000000,
         availableAmount: 900000,
         tenure: 120,
+        stableAddress: tether.address,
+        treasuryAddress: treasury,
       })
     ).to.be.revertedWith("InvalidAdvanceFee(9200, 9000)");
   });
@@ -467,6 +557,8 @@ describe("PricingTable", function () {
         invoiceAmount: 1000000,
         availableAmount: 900000,
         tenure: 120,
+        stableAddress: tether.address,
+        treasuryAddress: treasury,
       })
     ).to.be.revertedWith("InvalidFactoringFee(127, 227)");
   });
@@ -481,6 +573,8 @@ describe("PricingTable", function () {
         invoiceAmount: 10000000,
         availableAmount: 9000000,
         tenure: 120,
+        stableAddress: tether.address,
+        treasuryAddress: treasury,
       })
     ).to.be.revertedWith("InvalidInvoiceAmount(10000000, 500000, 1000000)");
   });
@@ -495,6 +589,8 @@ describe("PricingTable", function () {
         invoiceAmount: 10000000,
         availableAmount: 9000000,
         tenure: 20,
+        stableAddress: tether.address,
+        treasuryAddress: treasury,
       })
     ).to.be.revertedWith("InvalidTenure(20, 120, 180)");
   });
@@ -509,6 +605,8 @@ describe("PricingTable", function () {
         invoiceAmount: 900000,
         availableAmount: 1000000,
         tenure: 120,
+        stableAddress: tether.address,
+        treasuryAddress: treasury,
       })
     ).to.be.revertedWith("InvalidAvailableAmount(1000000, 900000)");
   });
