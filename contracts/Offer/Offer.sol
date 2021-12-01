@@ -83,7 +83,7 @@ contract Offers is IOffer, Ownable {
         uint dueDate,
         uint16 lateFee
     ) public onlyOwner {
-        require(OfferToPricingId[countId] != 0, "Offer doesn't exists");
+        require(_offerToPricingId[offerId] != 0, "Offer doesn't exists");
         require(
             Offers[offerId].refunded.netAmount == 0,
             "Offer already refunded"
