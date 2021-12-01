@@ -1,11 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+import "./IOffer.sol";
+import "../PricingTable/IPricingTable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./IOffer.sol";
-import "./PricingTable/IPricingTable.sol";
-import "hardhat/console.sol";
-import "./IOffer.sol";
 
 contract Offers is Ownable {
     IPricingTable pricingTable;
