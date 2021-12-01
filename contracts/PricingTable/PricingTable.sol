@@ -32,7 +32,7 @@ contract PricingTable is IPricingTable, Ownable {
         uint minAmount,
         uint maxAmount
     ) external onlyOwner {
-        require(!pricingStatus[pricingId], "Already exists, please update");
+        require(!_pricingStatus[pricingId], "Already exists, please update");
         PricingItem memory _pricingItem;
 
         _pricingItem.minTenure = minTenure;
@@ -42,9 +42,9 @@ contract PricingTable is IPricingTable, Ownable {
         _pricingItem.maxAdvancedRatio = maxAdvancedRatio;
         _pricingItem.minDiscountFee = minDiscountRange;
         _pricingItem.minFactoringFee = minFactoringFee;
-        pricingItems[pricingId] = _pricingItem;
-        pricingStatus[pricingId] = true;
-        emit NewPricingItem(pricingId);
+        _pricingItems[pricingId] = _pricingItem;
+        _pricingStatus[pricingId] = true;
+        emit NewPricingItem(_pricingItems[pricingId]);
     }
 
     /**
