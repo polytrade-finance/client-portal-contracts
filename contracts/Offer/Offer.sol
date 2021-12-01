@@ -21,10 +21,11 @@ contract Offers is IOffer, Ownable {
     }
 
     /**
-     * @notice Create an offer, check if it fits pricingItem requirements
+     * @notice Create an offer, check if it fits pricingItem requirements and send Advance to treasury
      * @dev calls _checkParams and returns Error if params don't fit with the pricingID
      * @dev only `Owner` can create a new offer
      * @dev emits OfferCreated event
+     * @dev send Advance Amount to treasury
      * @param pricingId, Id of the pricing Item
      * @param params, OfferParams(gracePeriod, tenure, factoringFee, discountFee, advanceFee, invoiceAmount, availableAmount)
      */
@@ -70,7 +71,7 @@ contract Offers is IOffer, Ownable {
     }
 
     /**
-     * @notice Send the reserve Refund
+     * @notice Send the reserve Refund to the treasury
      * @dev checks if Offer exists and if not refunded yet
      * @dev only `Owner` can call reserveRefund
      * @dev emits OfferReserveRefunded event
