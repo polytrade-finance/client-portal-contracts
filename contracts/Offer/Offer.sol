@@ -10,8 +10,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 contract Offers is IOffer, Ownable {
     IPricingTable public pricingTable;
 
-    uint _precision = 1E4;
-    uint decimals = 2;
+    uint private _countId;
+    uint private _precision = 1E4;
+
+    mapping(uint => bytes2) private _offerToPricingId;
+    mapping(uint => OfferItem) public offers;
 
     constructor(address pricingAddress) {
         pricingTable = IPricingTable(pricingAddress);
