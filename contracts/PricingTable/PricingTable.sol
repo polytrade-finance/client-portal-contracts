@@ -89,8 +89,8 @@ contract PricingTable is IPricingTable, Ownable {
      * @param id, id of the pricing Item
      */
     function removePricingItem(bytes2 id) external onlyOwner {
-        delete pricingItems[id];
-        pricingStatus[id] = false;
+        delete _pricingItems[id];
+        _pricingStatus[id] = false;
         emit RemovedPricingItem(id);
     }
 
@@ -105,7 +105,7 @@ contract PricingTable is IPricingTable, Ownable {
         override
         returns (PricingItem memory)
     {
-        return pricingItems[id];
+        return _pricingItems[id];
     }
 
     function isPricingItemValid(bytes2 id)
