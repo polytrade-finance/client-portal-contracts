@@ -173,7 +173,15 @@ contract Offers is IOffer, Ownable {
         refunded.netAmount = offer.reserve - refunded.totalCalculatedFees;
 
         offers[offerId].refunded = refunded;
-        emit ReserveRefunded(offerId, refunded.netAmount);
+
+        IERC20 stable = IERC20(offer.params.stableAddress);
+        uint8 decimals = IERC20Metadata(offer.params.stableAddress).decimals();
+
+        uint amount = offers[offerId].refunded.netAmount * (10**(decimals - 2));
+
+        stable.safeTransfer(offer.params.treasuryAddress, amount);
+
+        emit ReserveRefunded(offerId, amount);
     }
 
     /**
