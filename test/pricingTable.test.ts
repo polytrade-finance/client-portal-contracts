@@ -7,9 +7,8 @@ describe("PricingTable", function () {
   let pricingTable: PricingTable;
   let offers: Offers;
   let timestamp: number;
-  before(async () => {
+  beforeEach(async () => {
     timestamp = await getTimestamp();
-    console.log(timestamp);
   });
 
   it("Should return the new greeting once it's changed", async function () {
@@ -19,6 +18,62 @@ describe("PricingTable", function () {
   });
 
   it("Should add 606A pricing Item", async () => {
+    await pricingTable
+      .addPricingItem("0x606A", 0, 10, 90, 65, 12, 5000, 10000)
+      .then((tx) => tx.wait());
+  });
+
+  it("Should fail add existing pricing Item", async () => {
+    await expect(
+      pricingTable.addPricingItem("0x606A", 0, 10, 90, 65, 12, 5000, 10000)
+    ).to.be.revertedWith("Already exists, please update");
+  });
+
+  it("Should check 606A before update", async () => {
+    const pricingItem = await pricingTable.getPricingItem("0x606A");
+    expect(pricingItem.minTenure).to.equal(0);
+  });
+
+  it("Should update 606A pricing Item", async () => {
+    await pricingTable
+      .updatePricingItem("0x606A", 1, 10, 90, 65, 12, 5000, 10000, true)
+      .then((tx) => tx.wait());
+  });
+
+  it("Should check if 606A has been updated", async () => {
+    const pricingItem = await pricingTable.getPricingItem("0x606A");
+    expect(pricingItem.minTenure).to.equal(1);
+  });
+
+  it("Should check if 606A is valid pricing Item", async () => {
+    expect(await pricingTable.isPricingItemValid("0x606A")).to.equal(true);
+  });
+
+  it("Should remove 606A pricing Item", async () => {
+    await pricingTable.removePricingItem("0x606A").then((tx) => tx.wait());
+  });
+
+  it("Should fail update inexisting pricing Item", async () => {
+    await expect(
+      pricingTable.updatePricingItem(
+        "0x606A",
+        0,
+        10,
+        90,
+        65,
+        12,
+        5000,
+        10000,
+        true
+      )
+    ).to.be.revertedWith("Invalid Pricing Item");
+  });
+
+  it("Should check if 606A is invalid pricing Item", async () => {
+    expect(await pricingTable.isPricingItemValid("0x606A")).to.equal(false);
+  });
+
+  it("Should add 606A pricing Ite again", async () => {
     await pricingTable
       .addPricingItem("0x606A", 20, 60, 90, 65, 12, 5000, 10000)
       .then((tx) => tx.wait());
@@ -126,8 +181,6 @@ describe("PricingTable", function () {
       // tokenAddress: "0x2e3c1bAe5D365D1dcd0EaC91B00d54518717Ee06",
     });
 
-    // console.log((await offers.Offers(1)).toString());
-
     const date = Math.floor(Date.now() / 1000);
     await offers.reserveRefund(1, date + 60 * 60, 2);
   });
@@ -143,7 +196,7 @@ describe("PricingTable", function () {
       tenure: 79,
     });
 
-    const offer = await offers.Offers(offerId);
+    const offer = await offers.offers(offerId);
     expect(offer.advancedAmount).to.equal("7862428");
     expect(offer.reserve).to.equal("1072150");
     expect(offer.disbursingAdvanceDate).to.be.above(timestamp);
@@ -159,7 +212,7 @@ describe("PricingTable", function () {
 
   it("Should reserveRefund for Offer(2) scenario 1 grade A with Invoice == Available", async (offerId: number = 2) => {
     await offers.reserveRefund(offerId, timestamp, 0);
-    const offer = await offers.Offers(offerId);
+    const offer = await offers.offers(offerId);
     expect(offer.refunded.dueDate).to.equal(timestamp);
     expect(offer.refunded.lateFee).to.equal(0);
     expect(offer.refunded.numberOfLateDays).to.equal(0);
@@ -179,7 +232,7 @@ describe("PricingTable", function () {
       tenure: 45,
     });
 
-    const offer = await offers.Offers(offerId);
+    const offer = await offers.offers(offerId);
     expect(offer.advancedAmount).to.equal("7594391");
     expect(offer.reserve).to.equal("1340187");
     expect(offer.disbursingAdvanceDate).to.be.above(timestamp);
@@ -195,7 +248,7 @@ describe("PricingTable", function () {
 
   it("Should reserveRefund for Offer(3) scenario 2 grade A with Invoice == Available", async (offerId: number = 3) => {
     await offers.reserveRefund(offerId, timestamp, 0);
-    const offer = await offers.Offers(offerId);
+    const offer = await offers.offers(offerId);
     expect(offer.refunded.dueDate).to.equal(timestamp);
     expect(offer.refunded.lateFee).to.equal(0);
     expect(offer.refunded.numberOfLateDays).to.equal(0);
@@ -215,7 +268,7 @@ describe("PricingTable", function () {
       tenure: 100,
     });
 
-    const offer = await offers.Offers(offerId);
+    const offer = await offers.offers(offerId);
     expect(offer.advancedAmount).to.equal("6254204");
     expect(offer.reserve).to.equal("2680374");
     expect(offer.disbursingAdvanceDate).to.be.above(timestamp);
@@ -231,7 +284,7 @@ describe("PricingTable", function () {
 
   it("Should reserveRefund Offer(4) scenario 3 grade B with Invoice == Available", async (offerId: number = 4) => {
     await offers.reserveRefund(offerId, timestamp, 0);
-    const offer = await offers.Offers(offerId);
+    const offer = await offers.offers(offerId);
     expect(offer.refunded.dueDate).to.equal(timestamp);
     expect(offer.refunded.lateFee).to.equal(0);
     expect(offer.refunded.numberOfLateDays).to.equal(0);
@@ -265,7 +318,7 @@ describe("PricingTable", function () {
       tenure: 60,
     });
 
-    const offer = await offers.Offers(offerId);
+    const offer = await offers.offers(offerId);
     expect(offer.advancedAmount).to.equal("720000");
     expect(offer.reserve).to.equal("280000");
     expect(offer.disbursingAdvanceDate).to.be.above(timestamp);
@@ -284,7 +337,7 @@ describe("PricingTable", function () {
 
     await increaseTime(ONE_DAY * 8);
     await offers.reserveRefund(offerId, now, 2750);
-    const offer = await offers.Offers(offerId);
+    const offer = await offers.offers(offerId);
     expect(offer.refunded.dueDate).to.equal(timestamp);
     expect(offer.refunded.lateFee).to.equal(2750);
     expect(offer.refunded.numberOfLateDays).to.equal(8);
@@ -303,7 +356,7 @@ describe("PricingTable", function () {
       availableAmount: 900000,
       tenure: 95,
     });
-    const offer = await offers.Offers(offerId);
+    const offer = await offers.offers(offerId);
     expect(offer.advancedAmount).to.equal("801000");
     expect(offer.reserve).to.equal("199000");
     expect(offer.disbursingAdvanceDate).to.be.above(timestamp);
@@ -319,7 +372,7 @@ describe("PricingTable", function () {
 
   it("Should reserveRefund for Offer(6) scenario 1 grade B with Invoice != Available", async (offerId: number = 6) => {
     await offers.reserveRefund(offerId, timestamp + ONE_DAY * 10, 2750);
-    const offer = await offers.Offers(offerId);
+    const offer = await offers.offers(offerId);
     expect(offer.refunded.dueDate).to.equal(timestamp + ONE_DAY * 10);
     expect(offer.refunded.lateFee).to.equal(2750);
     expect(offer.refunded.numberOfLateDays).to.equal(0);
@@ -328,7 +381,7 @@ describe("PricingTable", function () {
     expect(offer.refunded.rewards).to.equal("0");
   });
 
-  it("Should fail create Offer(7) scenario 3 grade C with Invoice != Available", async () => {
+  it("Should fail create Offer scenario 3 grade C with InvalidDiscountFee", async () => {
     await expect(
       offers.createOffer("0x689C", {
         advanceFee: 7200,
@@ -353,7 +406,7 @@ describe("PricingTable", function () {
       tenure: 30,
     });
 
-    const offer = await offers.Offers(offerId);
+    const offer = await offers.offers(offerId);
     expect(offer.advancedAmount).to.equal("810000");
     expect(offer.reserve).to.equal("190000");
     expect(offer.disbursingAdvanceDate).to.be.above(timestamp);
@@ -369,12 +422,94 @@ describe("PricingTable", function () {
 
   it("Should reserveRefund for Offer(7) scenario 4 grade C with Invoice != Available", async (offerId: number = 7) => {
     await offers.reserveRefund(offerId, timestamp + 9 * ONE_DAY, 2750);
-    const offer = await offers.Offers(offerId);
+    const offer = await offers.offers(offerId);
     expect(offer.refunded.dueDate).to.equal(timestamp + 9 * ONE_DAY);
     expect(offer.refunded.lateFee).to.equal(2750);
     expect(offer.refunded.numberOfLateDays).to.equal(0);
     expect(offer.refunded.totalCalculatedFees).to.equal("24959");
     expect(offer.refunded.netAmount).to.equal("165041");
     expect(offer.refunded.rewards).to.equal("0");
+  });
+
+  it("Should fail reserveRefund if already refunded for Offer(7) ", async (offerId: number = 7) => {
+    await expect(
+      offers.reserveRefund(offerId, timestamp + 9 * ONE_DAY, 2750)
+    ).to.be.revertedWith("Offer already refunded");
+  });
+
+  it("Should fail reserveRefund for inexisting Offer(8) ", async (offerId: number = 8) => {
+    await expect(
+      offers.reserveRefund(offerId, timestamp + 9 * ONE_DAY, 2750)
+    ).to.be.revertedWith("Offer doesn't exists");
+  });
+
+  it("Should fail create Offer with InvalidAdvanceFee", async () => {
+    await expect(
+      offers.createOffer("0x689C", {
+        advanceFee: 9200,
+        discountFee: 800,
+        factoringFee: 227,
+        gracePeriod: 5,
+        invoiceAmount: 1000000,
+        availableAmount: 900000,
+        tenure: 120,
+      })
+    ).to.be.revertedWith("InvalidAdvanceFee(9200, 9000)");
+  });
+
+  it("Should fail create Offer with InvalidFactoringFee", async () => {
+    await expect(
+      offers.createOffer("0x689C", {
+        advanceFee: 9000,
+        discountFee: 800,
+        factoringFee: 127,
+        gracePeriod: 5,
+        invoiceAmount: 1000000,
+        availableAmount: 900000,
+        tenure: 120,
+      })
+    ).to.be.revertedWith("InvalidFactoringFee(127, 227)");
+  });
+
+  it("Should fail create Offer with InvalidAmount", async () => {
+    await expect(
+      offers.createOffer("0x689C", {
+        advanceFee: 9000,
+        discountFee: 800,
+        factoringFee: 227,
+        gracePeriod: 5,
+        invoiceAmount: 10000000,
+        availableAmount: 9000000,
+        tenure: 120,
+      })
+    ).to.be.revertedWith("InvalidInvoiceAmount(10000000, 500000, 1000000)");
+  });
+
+  it("Should fail create Offer with Invalid Tenure", async () => {
+    await expect(
+      offers.createOffer("0x689C", {
+        advanceFee: 9000,
+        discountFee: 800,
+        factoringFee: 227,
+        gracePeriod: 5,
+        invoiceAmount: 10000000,
+        availableAmount: 9000000,
+        tenure: 20,
+      })
+    ).to.be.revertedWith("InvalidTenure(20, 120, 180)");
+  });
+
+  it("Should fail create Offer with available amount higher than invoice amount", async () => {
+    await expect(
+      offers.createOffer("0x689C", {
+        advanceFee: 9000,
+        discountFee: 800,
+        factoringFee: 227,
+        gracePeriod: 5,
+        invoiceAmount: 900000,
+        availableAmount: 1000000,
+        tenure: 120,
+      })
+    ).to.be.revertedWith("InvalidAvailableAmount(1000000, 900000)");
   });
 });
