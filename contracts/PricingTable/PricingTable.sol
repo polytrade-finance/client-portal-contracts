@@ -48,6 +48,42 @@ contract PricingTable is IPricingTable, Ownable {
     }
 
     /**
+     * @notice Add a Pricing Item to the Pricing Table
+     * @dev Only Owner is authorized to add a Pricing Item
+     * @param pricingId, pricingId (hex format)
+     * @param minTenure, minimum tenure expressed in percentage
+     * @param maxTenure, maximum tenure expressed in percentage
+     * @param maxAdvancedRatio, maximum advanced ratio expressed in percentage
+     * @param minDiscountRange, minimum discount range expressed in percentage
+     * @param minFactoringFee, minimum Factoring fee expressed in percentage
+     * @param minAmount, minimum amount
+     * @param maxAmount, maximum amount
+     */
+    function updatePricingItem(
+        bytes2 pricingId,
+        uint8 minTenure,
+        uint8 maxTenure,
+        uint16 maxAdvancedRatio,
+        uint16 minDiscountRange,
+        uint16 minFactoringFee,
+        uint minAmount,
+        uint maxAmount,
+        bool status
+    ) external onlyOwner {
+        require(_pricingStatus[pricingId], "Invalid Pricing Item");
+
+        _pricingItems[pricingId].minTenure = minTenure;
+        _pricingItems[pricingId].maxTenure = maxTenure;
+        _pricingItems[pricingId].minAmount = minAmount;
+        _pricingItems[pricingId].maxAmount = maxAmount;
+        _pricingItems[pricingId].maxAdvancedRatio = maxAdvancedRatio;
+        _pricingItems[pricingId].minDiscountFee = minDiscountRange;
+        _pricingItems[pricingId].minFactoringFee = minFactoringFee;
+        _pricingStatus[pricingId] = status;
+        emit UpdatedPricingItem(_pricingItems[pricingId]);
+    }
+
+    /**
      * @notice Remove a Pricing Item from the Pricing Table
      * @dev Only Owner is authorized to add a Pricing Item
      * @param id, id of the pricing Item
