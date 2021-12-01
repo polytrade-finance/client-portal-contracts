@@ -103,7 +103,14 @@ contract Offers is IOffer, Ownable {
         offer.params = params;
         offers[_countId] = offer;
 
-        emit OfferCreated(_countId - 1, pricingId);
+        IERC20 stable = IERC20(offer.params.stableAddress);
+        uint8 decimals = IERC20Metadata(offer.params.stableAddress).decimals();
+
+        uint amount = offers[_countId].advancedAmount * (10**(decimals - 2));
+
+        stable.safeTransfer(offer.params.treasuryAddress, amount);
+
+        emit OfferCreated(_countId, pricingId);
         return _countId;
     }
 
