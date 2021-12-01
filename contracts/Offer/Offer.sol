@@ -176,12 +176,19 @@ contract Offers is IOffer, Ownable {
         return true;
     }
 
+    /**
+     * @notice calculate the advanced Amount (availableAmount * advanceFee)
+     * @dev calculate based on `(availableAmount * advanceFee)/ _precision` formula
+     * @param availableAmount, amount for the available amount
+     * @param advanceFee, ratio for the advance Fee
+     * @return uint amount of the advanced
+     */
     function _calculateAdvancedAmount(uint availableAmount, uint16 advanceFee)
         private
         view
         returns (uint)
     {
-        return (availableAmount * advanceFee) / precision;
+        return (availableAmount * advanceFee) / _precision;
     }
 
     function _calculateFactoringAmount(uint invoiceAmount, uint16 factoringFee)
