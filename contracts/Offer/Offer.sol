@@ -5,8 +5,10 @@ import "./IOffer.sol";
 import "../PricingTable/IPricingTable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Offers is Ownable {
-    IPricingTable pricingTable;
+/// @title Offer
+/// @author Polytrade
+contract Offers is IOffer, Ownable {
+    IPricingTable public pricingTable;
 
     uint _precision = 1E4;
     uint decimals = 2;
