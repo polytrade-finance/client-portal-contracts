@@ -6,7 +6,7 @@
 
 Create an offer, check if it fits pricingItem requirements
 
-calls _checkParams and returns Error if params don't fit with the pricingID
+calls \_checkParams and returns Error if params don't fit with the pricingID
 only `Owner` can create a new offer
 emits OfferCreated event
 
