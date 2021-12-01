@@ -34,8 +34,6 @@ error InvalidInvoiceAmount(uint invoiceAmount, uint minAmount, uint maxAmount);
 error InvalidAvailableAmount(uint availableAmount, uint invoiceAmount);
 
 struct OfferItem {
-    address borrowerAddress;
-    address tokenAddress;
     uint advancedAmount;
     uint reserve;
     uint disbursingAdvanceDate;
@@ -49,6 +47,8 @@ struct OfferParams {
     uint16 factoringFee;
     uint16 discountFee;
     uint16 advanceFee;
+    address treasuryAddress;
+    address stableAddress;
     uint invoiceAmount;
     uint availableAmount;
 }
