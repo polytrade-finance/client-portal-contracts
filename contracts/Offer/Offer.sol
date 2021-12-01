@@ -191,6 +191,13 @@ contract Offers is IOffer, Ownable {
         return (availableAmount * advanceFee) / _precision;
     }
 
+    /**
+     * @notice calculate the Factoring Amount (invoiceAmount * factoringFee)
+     * @dev calculate based on `(invoiceAmount * factoringFee) / _precision` formula
+     * @param invoiceAmount, amount for the invoice amount
+     * @param factoringFee, ratio for the factoring Fee
+     * @return uint amount of the factoring
+     */
     function _calculateFactoringAmount(uint invoiceAmount, uint16 factoringFee)
         private
         view
