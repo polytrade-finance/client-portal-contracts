@@ -203,9 +203,17 @@ contract Offers is IOffer, Ownable {
         view
         returns (uint)
     {
-        return (invoiceAmount * factoringFee) / precision;
+        return (invoiceAmount * factoringFee) / _precision;
     }
 
+    /**
+     * @notice calculate the Discount Amount ((advancedAmount * discountFee) / 365) * tenure)
+     * @dev calculate based on `((advancedAmount * discountFee) / 365) * tenure) / _precision` formula
+     * @param advancedAmount, amount for the advanced amount
+     * @param discountFee, ratio for the discount Fee
+     * @param tenure, tenure
+     * @return uint amount of the Discount
+     */
     function _calculateDiscountAmount(
         uint advancedAmount,
         uint16 discountFee,
