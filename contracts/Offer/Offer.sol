@@ -60,10 +60,10 @@ contract Offers is IOffer, Ownable {
             "advanced + reserve != invoice"
         );
 
-        countId++;
-        OfferToPricingId[countId] = pricingId;
+        _countId++;
+        _offerToPricingId[_countId] = pricingId;
         offer.params = params;
-        Offers[countId] = offer;
+        offers[_countId] = offer;
 
         return countId;
     }
