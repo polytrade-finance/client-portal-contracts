@@ -1,39 +1,49 @@
 # Polytrade - Smart contracts - Solidity
 
-This project demonstrates an advanced Decentralized Invoice Finance use case, integrating other tools commonly used alongside Hardhat in the ecosystem.
+## `PricingTable`
 
-The project comes with contracts, tests for those contracts, scripts that deploy contracts, it also comes with a variety of other tools, preconfigured.
+### `addPricingItem(bytes2 pricingId, uint8 minTenure, uint8 maxTenure, uint16 maxAdvancedRatio, uint16 minDiscountRange, uint16 minFactoringFee, uint256 minAmount, uint256 maxAmount)` (external)
 
-Try running some of the following tasks:
+Add a Pricing Item to the Pricing Table
 
-```shell
-npx hardhat test
-npx hardhat coverage
-npx hardhat compile
-npx eslint '**/*.js'
-npx eslint '**/*.js' --fix
-npx prettier '**/*.{json,sol,md}' --check && npx solhint 'contracts/**/*.sol'
-npx prettier '**/*.{json,sol,md}' --write && npx solhint 'contracts/**/*.sol' --fix
-npm run lint:js && npm run lint:sol
-npm run lint:js-fix && npm run lint:sol-fix
-npx hardhat accounts
-npx hardhat compile
-npx hardhat clean
-npx hardhat test
-npx hardhat node
-npx hardhat help
-REPORT_GAS=true npx hardhat test
-npx hardhat coverage
-npx hardhat run scripts/deploy.ts
-TS_NODE_FILES=true npx ts-node scripts/deploy.ts
-npx eslint '**/*.{js,ts}'
-npx eslint '**/*.{js,ts}' --fix
-npx prettier '**/*.{json,sol,md}' --check
-npx prettier '**/*.{json,sol,md}' --write
-npx solhint 'contracts/**/*.sol'
-npx solhint 'contracts/**/*.sol' --fix
-```
+Only Owner is authorized to add a Pricing Item
 
-# Performance optimizations
+### `updatePricingItem(bytes2 pricingId, uint8 minTenure, uint8 maxTenure, uint16 maxAdvancedRatio, uint16 minDiscountRange, uint16 minFactoringFee, uint256 minAmount, uint256 maxAmount, bool status)` (external)
 
-For faster runs of your tests and scripts, consider skipping ts-node's type checking by setting the environment variable `TS_NODE_TRANSPILE_ONLY` to `1` in hardhat's environment. For more details see [the documentation](https://hardhat.org/guides/typescript.html#performance-optimizations).
+Add a Pricing Item to the Pricing Table
+
+Only Owner is authorized to add a Pricing Item
+
+### `removePricingItem(bytes2 id)` (external)
+
+Remove a Pricing Item from the Pricing Table
+
+Only Owner is authorized to add a Pricing Item
+
+### `getPricingItem(bytes2 id) → struct IPricingTable.PricingItem` (external)
+
+Returns the pricing Item
+
+### `isPricingItemValid(bytes2 id) → bool` (external)
+
+Returns if the pricing Item is valid
+
+## `Offers`
+
+### `constructor(address pricingAddress)` (public)
+
+### `createOffer(bytes2 pricingId, struct OfferParams params) → uint256` (public)
+
+Create an offer, check if it fits pricingItem requirements
+
+calls \_checkParams and returns Error if params don't fit with the pricingID
+only `Owner` can create a new offer
+emits OfferCreated event
+
+### `reserveRefund(uint256 offerId, uint256 dueDate, uint16 lateFee)` (public)
+
+Send the reserve Refund
+
+checks if Offer exists and if not refunded yet
+only `Owner` can call reserveRefund
+emits OfferReserveRefunded event
