@@ -20,11 +20,14 @@ contract Offers is IOffer, Ownable {
         pricingTable = IPricingTable(pricingAddress);
     }
 
-    uint private countId;
-    mapping(uint => bytes2) private OfferToPricingId;
-    mapping(uint => OfferItem) public Offers;
-    uint precision = 1E4;
-
+    /**
+     * @notice Create an offer, check if it fits pricingItem requirements
+     * @dev calls _checkParams and returns Error if params don't fit with the pricingID
+     * @dev only `Owner` can create a new offer
+     * @dev emits OfferCreated event
+     * @param pricingId, Id of the pricing Item
+     * @param params, OfferParams(gracePeriod, tenure, factoringFee, discountFee, advanceFee, invoiceAmount, availableAmount)
+     */
     function createOffer(bytes2 pricingId, OfferParams memory params)
         public
         onlyOwner
