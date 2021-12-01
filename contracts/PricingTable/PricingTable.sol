@@ -48,8 +48,8 @@ contract PricingTable is IPricingTable, Ownable {
     }
 
     /**
-     * @notice Add a Pricing Item to the Pricing Table
-     * @dev Only Owner is authorized to add a Pricing Item
+     * @notice Update an existing Pricing Item
+     * @dev Only Owner is authorized to update a Pricing Item
      * @param pricingId, pricingId (hex format)
      * @param minTenure, minimum tenure expressed in percentage
      * @param maxTenure, maximum tenure expressed in percentage
