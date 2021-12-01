@@ -69,7 +69,15 @@ contract Offers is IOffer, Ownable {
         return _countId;
     }
 
-    // new state for offer - we ready to send trade tokens to user
+    /**
+     * @notice Send the reserve Refund
+     * @dev checks if Offer exists and if not refunded yet
+     * @dev only `Owner` can call reserveRefund
+     * @dev emits OfferReserveRefunded event
+     * @param offerId, Id of the offer
+     * @param dueDate, due date
+     * @param lateFee, late fees (ratio)
+     */
     function reserveRefund(
         uint offerId,
         uint dueDate,
