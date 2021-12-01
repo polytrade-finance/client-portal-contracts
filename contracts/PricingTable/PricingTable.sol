@@ -108,12 +108,17 @@ contract PricingTable is IPricingTable, Ownable {
         return _pricingItems[id];
     }
 
+    /**
+     * @notice Returns if the pricing Item is valid
+     * @param id, id of the pricing Item
+     * @return returns boolean if pricing is valid or not
+     */
     function isPricingItemValid(bytes2 id)
         external
         view
         override
         returns (bool)
     {
-        return pricingStatus[id];
+        return _pricingStatus[id];
     }
 }
