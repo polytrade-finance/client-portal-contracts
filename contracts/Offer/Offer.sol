@@ -65,7 +65,8 @@ contract Offers is IOffer, Ownable {
         offer.params = params;
         offers[_countId] = offer;
 
-        return countId;
+        emit OfferCreated(_countId - 1, pricingId);
+        return _countId;
     }
 
     // new state for offer - we ready to send trade tokens to user
