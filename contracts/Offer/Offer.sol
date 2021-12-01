@@ -85,11 +85,11 @@ contract Offers is IOffer, Ownable {
     ) public onlyOwner {
         require(_offerToPricingId[offerId] != 0, "Offer doesn't exists");
         require(
-            Offers[offerId].refunded.netAmount == 0,
+            offers[offerId].refunded.netAmount == 0,
             "Offer already refunded"
         );
 
-        OfferItem memory offer = Offers[offerId];
+        OfferItem memory offer = offers[offerId];
         OfferRefunded memory refunded;
 
         refunded.lateFee = lateFee;
@@ -105,9 +105,9 @@ contract Offers is IOffer, Ownable {
                 offer.params.gracePeriod
             );
             lateAmount = _calculateLateAmount(
+                offer.advancedAmount,
                 lateFee,
-                refunded.numberOfLateDays,
-                offer.advancedAmount
+                refunded.numberOfLateDays
             );
         }
 
@@ -122,12 +122,13 @@ contract Offers is IOffer, Ownable {
             offer.params.tenure
         );
 
-        refunded.totalCalculatedFees =
-            (lateAmount + factoringAmount + discountAmount) /
-            precision;
+        refunded.totalCalculatedFees = (lateAmount +
+            factoringAmount +
+            discountAmount);
         refunded.netAmount = offer.reserve - refunded.totalCalculatedFees;
 
-        Offers[offerId].refunded = refunded;
+        offers[offerId].refunded = refunded;
+        emit ReserveRefunded(offerId, refunded.netAmount);
     }
 
     function _checkParams(
