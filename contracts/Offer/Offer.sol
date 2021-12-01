@@ -11,6 +11,8 @@ import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 /// @title Offer
 /// @author Polytrade
 contract Offers is IOffer, Ownable {
+    using SafeERC20 for IERC20;
+
     IPricingTable public pricingTable;
 
     uint private _countId;
