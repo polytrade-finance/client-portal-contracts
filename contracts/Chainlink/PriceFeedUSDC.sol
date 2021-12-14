@@ -5,7 +5,7 @@ import "./IPriceFeedUSDC.sol";
 import "./AggregatorV3Interface.sol";
 
 contract PriceFeedUSDC is IPriceFeedUSDC {
-    AggregatorV3Interface immutable aggregator;
+    AggregatorV3Interface public immutable aggregator;
 
     constructor() {
         aggregator = AggregatorV3Interface(
