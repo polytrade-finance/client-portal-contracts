@@ -29,6 +29,31 @@ contract Offers is IOffer, Ownable {
         priceFeed = IPriceFeedUSDC(priceFeedAddress);
     }
 
+    function activateOracle() external onlyOwner {
+        toggleOracle = true;
+        //        emit
+    }
+
+    function deactivateOracle() external onlyOwner {
+        toggleOracle = false;
+        //        emit
+    }
+
+    function setPricingTableAddress(address _newPricingTable)
+        external
+        onlyOwner
+    {
+        address oldPricingTable = address(pricingTable);
+        pricingTable = IPricingTable(_newPricingTable);
+        emit NewPricingTableContract(oldPricingTable, _newPricingTable);
+    }
+
+    function setPriceFeedAddress(address _newPriceFeed) external onlyOwner {
+        address oldPriceFeed = address(priceFeed);
+        priceFeed = IPriceFeedUSDC(_newPriceFeed);
+        emit NewPriceFeedContract(oldPriceFeed, _newPriceFeed);
+    }
+
     /**
      * @notice check if params fit with the pricingItem
      * @dev checks every params and returns a custom Error
