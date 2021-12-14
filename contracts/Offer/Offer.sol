@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "./IOffer.sol";
+import "../Chainlink/IPriceFeedUSDC.sol";
 import "../PricingTable/IPricingTable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -14,6 +15,7 @@ contract Offers is IOffer, Ownable {
     using SafeERC20 for IERC20;
 
     IPricingTable public pricingTable;
+    IPriceFeedUSDC public priceFeed;
 
     uint private _countId;
     uint private _precision = 1E4;
