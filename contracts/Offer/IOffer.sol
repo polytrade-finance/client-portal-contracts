@@ -36,7 +36,7 @@ error InvalidAvailableAmount(uint availableAmount, uint invoiceAmount);
 struct OfferItem {
     uint advancedAmount;
     uint reserve;
-    uint disbursingAdvanceDate;
+    uint64 disbursingAdvanceDate;
     OfferParams params;
     OfferRefunded refunded;
 }
@@ -54,7 +54,7 @@ struct OfferParams {
 }
 
 struct OfferRefunded {
-    uint dueDate;
+    uint64 dueDate;
     uint16 lateFee;
     uint24 numberOfLateDays;
     uint totalCalculatedFees;
