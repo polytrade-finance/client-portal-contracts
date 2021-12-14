@@ -160,7 +160,7 @@ contract Offers is IOffer, Ownable {
      */
     function reserveRefund(
         uint offerId,
-        uint dueDate,
+        uint64 dueDate,
         uint16 lateFee
     ) public onlyOwner {
         require(_offerToPricingId[offerId] != 0, "Offer doesn't exists");
