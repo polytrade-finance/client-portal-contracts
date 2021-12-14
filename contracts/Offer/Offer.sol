@@ -19,6 +19,7 @@ contract Offers is IOffer, Ownable {
 
     uint private _countId;
     uint private _precision = 1E4;
+    bool public toggleOracle;
 
     mapping(uint => bytes2) private _offerToPricingId;
     mapping(uint => OfferItem) public offers;
