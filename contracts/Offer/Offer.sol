@@ -34,7 +34,7 @@ contract Offers is IOffer, Ownable {
      */
     function activateOracle() external onlyOwner {
         toggleOracle = true;
-        //        emit
+        emit OracleActivated();
     }
 
     /**
@@ -42,7 +42,7 @@ contract Offers is IOffer, Ownable {
      */
     function deactivateOracle() external onlyOwner {
         toggleOracle = false;
-        //        emit
+        emit OracleDeactivated();
     }
 
     /**
