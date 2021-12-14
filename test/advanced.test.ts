@@ -4,6 +4,7 @@ import { ethers } from "hardhat";
 import { Offers, PriceFeedUSDC, PricingTable, Token } from "../typechain";
 import { getTimestamp, increaseTime, ONE_DAY } from "./helpers";
 import { parseUnits } from "ethers/lib/utils";
+import { BigNumber } from "ethers";
 
 describe("PricingTable", function () {
   let pricingTable: PricingTable;
