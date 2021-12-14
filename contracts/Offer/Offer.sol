@@ -29,11 +29,17 @@ contract Offers is IOffer, Ownable {
         priceFeed = IPriceFeedUSDC(priceFeedAddress);
     }
 
+    /**
+     * @dev Activate usage of the Oracle
+     */
     function activateOracle() external onlyOwner {
         toggleOracle = true;
         //        emit
     }
 
+    /**
+     * @dev De-activate usage of the Oracle
+     */
     function deactivateOracle() external onlyOwner {
         toggleOracle = false;
         //        emit
@@ -48,6 +54,10 @@ contract Offers is IOffer, Ownable {
         emit NewPricingTableContract(oldPricingTable, _newPricingTable);
     }
 
+    /**
+     * @dev Set PriceFeed linked to the contract to a new PriceFeed (`priceFeed`)
+     * Can only be called by the owner
+     */
     function setPriceFeedAddress(address _newPriceFeed) external onlyOwner {
         address oldPriceFeed = address(priceFeed);
         priceFeed = IPriceFeedUSDC(_newPriceFeed);
