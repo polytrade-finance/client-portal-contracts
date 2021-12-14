@@ -65,4 +65,12 @@ struct OfferRefunded {
 interface IOffer {
     event OfferCreated(uint indexed offerId, bytes2 pricingId);
     event ReserveRefunded(uint indexed offerId, uint refundedAmount);
+    event NewPricingTableContract(
+        address oldPricingTableAddress,
+        address newPricingTableAddress
+    );
+    event NewPriceFeedContract(
+        address oldPriceFeedAddress,
+        address newPriceFeedAddress
+    );
 }
