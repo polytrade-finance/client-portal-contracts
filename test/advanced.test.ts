@@ -25,10 +25,10 @@ describe("PricingTable", function () {
 
   beforeEach(async () => {
     timestamp = await getTimestamp();
-    if (tether) {
-      await tether
+    if (usdcContract) {
+      await usdcContract
         .connect(accounts[2])
-        .transfer(addresses[1], await tether.balanceOf(treasury));
+        .transfer(addresses[1], await usdcContract.balanceOf(treasury));
     }
   });
 
