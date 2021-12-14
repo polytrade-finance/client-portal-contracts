@@ -1,14 +1,16 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Offers, PricingTable, Token } from "../typechain";
+import { Offers, PriceFeedUSDC, PricingTable, Token } from "../typechain";
 import { getTimestamp, increaseTime, ONE_DAY } from "./helpers";
 import { parseUnits } from "ethers/lib/utils";
 
 describe("PricingTable", function () {
   let pricingTable: PricingTable;
+  let priceFeed: PriceFeedUSDC;
   let offers: Offers;
-  let tether: Token;
+  let usdcContract: Token;
+  let decimals: BigNumber;
   let timestamp: number;
   let accounts: SignerWithAddress[];
   let addresses: string[];
