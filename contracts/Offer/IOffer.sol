@@ -63,14 +63,39 @@ interface IOffer {
         uint rewards;
     }
 
+    /**
+     * @dev Emitted when new offer is created
+     */
     event OfferCreated(uint indexed offerId, bytes2 pricingId);
+
+    /**
+     * @dev Emitted when Reserve is refunded
+     */
     event ReserveRefunded(uint indexed offerId, uint refundedAmount);
+
+    /**
+     * @dev Emitted when PricingTable Address is updated
+     */
     event NewPricingTableContract(
         address oldPricingTableAddress,
         address newPricingTableAddress
     );
+
+    /**
+     * @dev Emitted when PriceFeed Address is updated
+     */
     event NewPriceFeedContract(
         address oldPriceFeedAddress,
         address newPriceFeedAddress
     );
+
+    /**
+     * @dev Emitted when Oracle usage is ctivated
+     */
+    event OracleActivated();
+
+    /**
+     * @dev Emitted when Oracle usage is deactivated
+     */
+    event OracleDeactivated();
 }
