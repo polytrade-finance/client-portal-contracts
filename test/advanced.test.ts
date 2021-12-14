@@ -232,14 +232,15 @@ describe("PricingTable", function () {
       availableAmount: 9000,
       invoiceAmount: 9000,
       tenure: 60,
-      stableAddress: tether.address,
+      stableAddress: usdcContract.address,
       treasuryAddress: treasury,
     });
-
     const date = Math.floor(Date.now() / 1000);
     await offers.reserveRefund(1, date + 60 * 60, 2);
 
-    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("89.82", 6));
+    expect(await usdcContract.balanceOf(treasury)).to.equal(
+      parseUnits("89.82", decimals)
+    );
   });
 
   it("Should create Offer(2) scenario 1 grade A with Invoice == Available", async (offerId: number = 2) => {
@@ -251,7 +252,7 @@ describe("PricingTable", function () {
       availableAmount: 8934578,
       invoiceAmount: 8934578,
       tenure: 79,
-      stableAddress: tether.address,
+      stableAddress: usdcContract.address,
       treasuryAddress: treasury,
     });
 
@@ -268,8 +269,8 @@ describe("PricingTable", function () {
     expect(offer.params.invoiceAmount).to.equal("8934578");
     expect(offer.params.availableAmount).to.equal("8934578");
 
-    expect(await tether.balanceOf(treasury)).to.equal(
-      parseUnits("78624.28", 6)
+    expect(await usdcContract.balanceOf(treasury)).to.equal(
+      parseUnits("78624.28", decimals)
     );
   });
 
@@ -283,7 +284,9 @@ describe("PricingTable", function () {
     expect(offer.refunded.netAmount).to.equal("885167");
     expect(offer.refunded.rewards).to.equal("0");
 
-    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("8851.67", 6));
+    expect(await usdcContract.balanceOf(treasury)).to.equal(
+      parseUnits("8851.67", decimals)
+    );
   });
 
   it("Should create Offer(3) scenario 2 grade A with Invoice == Available", async (offerId: number = 3) => {
@@ -295,7 +298,7 @@ describe("PricingTable", function () {
       availableAmount: 8934578,
       invoiceAmount: 8934578,
       tenure: 45,
-      stableAddress: tether.address,
+      stableAddress: usdcContract.address,
       treasuryAddress: treasury,
     });
 
@@ -312,8 +315,8 @@ describe("PricingTable", function () {
     expect(offer.params.invoiceAmount).to.equal("8934578");
     expect(offer.params.availableAmount).to.equal("8934578");
 
-    expect(await tether.balanceOf(treasury)).to.equal(
-      parseUnits("75943.91", 6)
+    expect(await usdcContract.balanceOf(treasury)).to.equal(
+      parseUnits("75943.91", decimals)
     );
   });
 
@@ -327,7 +330,9 @@ describe("PricingTable", function () {
     expect(offer.refunded.netAmount).to.equal("1233600");
     expect(offer.refunded.rewards).to.equal("0");
 
-    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("12336.0", 6));
+    expect(await usdcContract.balanceOf(treasury)).to.equal(
+      parseUnits("12336.0", decimals)
+    );
   });
 
   it("Should create Offer(4) scenario 3 grade B with Invoice == Available", async (offerId: number = 4) => {
@@ -339,7 +344,7 @@ describe("PricingTable", function () {
       availableAmount: 8934578,
       invoiceAmount: 8934578,
       tenure: 100,
-      stableAddress: tether.address,
+      stableAddress: usdcContract.address,
       treasuryAddress: treasury,
     });
 
@@ -356,8 +361,8 @@ describe("PricingTable", function () {
     expect(offer.params.invoiceAmount).to.equal("8934578");
     expect(offer.params.availableAmount).to.equal("8934578");
 
-    expect(await tether.balanceOf(treasury)).to.equal(
-      parseUnits("62542.04", 6)
+    expect(await usdcContract.balanceOf(treasury)).to.equal(
+      parseUnits("62542.04", decimals)
     );
   });
 
@@ -371,7 +376,9 @@ describe("PricingTable", function () {
     expect(offer.refunded.netAmount).to.equal("2375400");
     expect(offer.refunded.rewards).to.equal("0");
 
-    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("23754.0", 6));
+    expect(await usdcContract.balanceOf(treasury)).to.equal(
+      parseUnits("23754.0", decimals)
+    );
   });
 
   it("Should fail creating Offer(5) scenario 4 grade B with Invoice == Available", async () => {
@@ -384,7 +391,7 @@ describe("PricingTable", function () {
         availableAmount: 8934578,
         invoiceAmount: 8934578,
         tenure: 22,
-        stableAddress: tether.address,
+        stableAddress: usdcContract.address,
         treasuryAddress: treasury,
       })
     ).to.be.revertedWith("InvalidFactoringFee(40, 50)");
@@ -399,7 +406,7 @@ describe("PricingTable", function () {
       invoiceAmount: 1000000,
       availableAmount: 900000,
       tenure: 60,
-      stableAddress: tether.address,
+      stableAddress: usdcContract.address,
       treasuryAddress: treasury,
     });
 
@@ -416,7 +423,9 @@ describe("PricingTable", function () {
     expect(offer.params.invoiceAmount).to.equal("1000000");
     expect(offer.params.availableAmount).to.equal("900000");
 
-    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("7200.0", 6));
+    expect(await usdcContract.balanceOf(treasury)).to.equal(
+      parseUnits("7200.0", decimals)
+    );
   });
 
   it("Should reserveRefund for Offer(5) scenario 1 grade B with Invoice != Available", async (offerId: number = 5) => {
@@ -432,7 +441,9 @@ describe("PricingTable", function () {
     expect(offer.refunded.netAmount).to.equal("248785");
     expect(offer.refunded.rewards).to.equal("0");
 
-    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("2487.85", 6));
+    expect(await usdcContract.balanceOf(treasury)).to.equal(
+      parseUnits("2487.85", decimals)
+    );
   });
 
   it("Should create Offer(6) scenario 2 grade B with Invoice != Available", async (offerId: number = 6) => {
@@ -444,7 +455,7 @@ describe("PricingTable", function () {
       invoiceAmount: 1000000,
       availableAmount: 900000,
       tenure: 95,
-      stableAddress: tether.address,
+      stableAddress: usdcContract.address,
       treasuryAddress: treasury,
     });
     const offer = await offers.offers(offerId);
@@ -460,7 +471,9 @@ describe("PricingTable", function () {
     expect(offer.params.invoiceAmount).to.equal("1000000");
     expect(offer.params.availableAmount).to.equal("900000");
 
-    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("8010.0", 6));
+    expect(await usdcContract.balanceOf(treasury)).to.equal(
+      parseUnits("8010.0", decimals)
+    );
   });
 
   it("Should reserveRefund for Offer(6) scenario 1 grade B with Invoice != Available", async (offerId: number = 6) => {
@@ -473,7 +486,9 @@ describe("PricingTable", function () {
     expect(offer.refunded.netAmount).to.equal("157022");
     expect(offer.refunded.rewards).to.equal("0");
 
-    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("1570.22", 6));
+    expect(await usdcContract.balanceOf(treasury)).to.equal(
+      parseUnits("1570.22", decimals)
+    );
   });
 
   it("Should fail create Offer scenario 3 grade C with InvalidDiscountFee", async () => {
@@ -486,7 +501,7 @@ describe("PricingTable", function () {
         invoiceAmount: 1000000,
         availableAmount: 900000,
         tenure: 120,
-        stableAddress: tether.address,
+        stableAddress: usdcContract.address,
         treasuryAddress: treasury,
       })
     ).to.be.revertedWith("InvalidDiscountFee(730, 800)");
@@ -501,7 +516,7 @@ describe("PricingTable", function () {
       invoiceAmount: 1000000,
       availableAmount: 900000,
       tenure: 30,
-      stableAddress: tether.address,
+      stableAddress: usdcContract.address,
       treasuryAddress: treasury,
     });
 
@@ -518,7 +533,9 @@ describe("PricingTable", function () {
     expect(offer.params.invoiceAmount).to.equal("1000000");
     expect(offer.params.availableAmount).to.equal("900000");
 
-    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("8100.0", 6));
+    expect(await usdcContract.balanceOf(treasury)).to.equal(
+      parseUnits("8100.0", decimals)
+    );
   });
 
   it("Should reserveRefund for Offer(7) scenario 4 grade C with Invoice != Available", async (offerId: number = 7) => {
@@ -531,7 +548,9 @@ describe("PricingTable", function () {
     expect(offer.refunded.netAmount).to.equal("165041");
     expect(offer.refunded.rewards).to.equal("0");
 
-    expect(await tether.balanceOf(treasury)).to.equal(parseUnits("1650.41", 6));
+    expect(await usdcContract.balanceOf(treasury)).to.equal(
+      parseUnits("1650.41", decimals)
+    );
   });
 
   it("Should fail reserveRefund if already refunded for Offer(7) ", async (offerId: number = 7) => {
@@ -556,7 +575,7 @@ describe("PricingTable", function () {
         invoiceAmount: 1000000,
         availableAmount: 900000,
         tenure: 120,
-        stableAddress: tether.address,
+        stableAddress: usdcContract.address,
         treasuryAddress: treasury,
       })
     ).to.be.revertedWith("InvalidAdvanceFee(9200, 9000)");
@@ -572,7 +591,7 @@ describe("PricingTable", function () {
         invoiceAmount: 1000000,
         availableAmount: 900000,
         tenure: 120,
-        stableAddress: tether.address,
+        stableAddress: usdcContract.address,
         treasuryAddress: treasury,
       })
     ).to.be.revertedWith("InvalidFactoringFee(127, 227)");
@@ -588,7 +607,7 @@ describe("PricingTable", function () {
         invoiceAmount: 10000000,
         availableAmount: 9000000,
         tenure: 120,
-        stableAddress: tether.address,
+        stableAddress: usdcContract.address,
         treasuryAddress: treasury,
       })
     ).to.be.revertedWith("InvalidInvoiceAmount(10000000, 500000, 1000000)");
@@ -604,7 +623,7 @@ describe("PricingTable", function () {
         invoiceAmount: 10000000,
         availableAmount: 9000000,
         tenure: 20,
-        stableAddress: tether.address,
+        stableAddress: usdcContract.address,
         treasuryAddress: treasury,
       })
     ).to.be.revertedWith("InvalidTenure(20, 120, 180)");
@@ -620,7 +639,7 @@ describe("PricingTable", function () {
         invoiceAmount: 900000,
         availableAmount: 1000000,
         tenure: 120,
-        stableAddress: tether.address,
+        stableAddress: usdcContract.address,
         treasuryAddress: treasury,
       })
     ).to.be.revertedWith("InvalidAvailableAmount(1000000, 900000)");
