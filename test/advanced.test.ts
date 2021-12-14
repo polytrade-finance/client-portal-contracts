@@ -208,9 +208,12 @@ describe("PricingTable", function () {
   });
 
   it("Should send 100,000,000 USDT to Offer Contract", async () => {
-    await tether.transfer(offers.address, parseUnits("1000000", 6));
-    expect(await tether.balanceOf(offers.address)).to.equal(
-      parseUnits("1000000", 6)
+    await usdcContract.transfer(
+      offers.address,
+      parseUnits("1000000", decimals)
+    );
+    expect(await usdcContract.balanceOf(offers.address)).to.equal(
+      parseUnits("1000000", decimals)
     );
   });
 
