@@ -45,6 +45,10 @@ contract Offers is IOffer, Ownable {
         //        emit
     }
 
+    /**
+     * @dev Set PricingTable linked to the contract to a new PricingTable (`pricingTable`)
+     * Can only be called by the owner
+     */
     function setPricingTableAddress(address _newPricingTable)
         external
         onlyOwner
