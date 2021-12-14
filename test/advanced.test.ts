@@ -195,10 +195,10 @@ describe("PricingTable", function () {
     expect(pricingItem.minAmount).to.equal(0);
   });
 
-  it("Should return Tether once deployed", async function () {
-    const Tether = await ethers.getContractFactory("Token");
-    tether = await Tether.deploy("Tether", "USDT", 6);
-    await tether.deployed();
+  it("Should return USDC once deployed", async function () {
+    const USDC = await ethers.getContractFactory("Token");
+    usdcContract = await USDC.deploy("USD Coin", "USDC", decimals);
+    await usdcContract.deployed();
   });
 
   it("Should deploy Offer Contract", async () => {
