@@ -137,7 +137,13 @@ contract Offers is IOffer, Ownable {
 
         uint amount = offers[_countId].advancedAmount * (10**(decimals - 2));
 
-        stable.safeTransfer(offer.params.treasuryAddress, amount);
+        if (toggleOracle) {
+            uint amountToTransfer = (amount * (10**priceFeed.getDecimals())) /
+                (priceFeed.getPrice());
+            stable.safeTransfer(offer.params.treasuryAddress, amountToTransfer);
+        } else {
+            stable.safeTransfer(offer.params.treasuryAddress, amount);
+        }
 
         emit OfferCreated(_countId, pricingId);
         return _countId;
