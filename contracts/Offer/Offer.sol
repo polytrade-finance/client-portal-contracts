@@ -2,7 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "./IOffer.sol";
-import "../Chainlink/IPriceFeedUSDC.sol";
+import "../Chainlink/IPriceFeeds.sol";
 import "../PricingTable/IPricingTable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -15,7 +15,7 @@ contract Offers is IOffer, Ownable {
     using SafeERC20 for IERC20;
 
     IPricingTable public pricingTable;
-    IPriceFeedUSDC public priceFeed;
+    IPriceFeeds public priceFeed;
 
     uint private _countId;
     uint private _precision = 1E4;
@@ -26,7 +26,7 @@ contract Offers is IOffer, Ownable {
 
     constructor(address pricingTableAddress, address priceFeedAddress) {
         pricingTable = IPricingTable(pricingTableAddress);
-        priceFeed = IPriceFeedUSDC(priceFeedAddress);
+        priceFeed = IPriceFeeds(priceFeedAddress);
     }
 
     /**
@@ -64,7 +64,7 @@ contract Offers is IOffer, Ownable {
      */
     function setPriceFeedAddress(address _newPriceFeed) external onlyOwner {
         address oldPriceFeed = address(priceFeed);
-        priceFeed = IPriceFeedUSDC(_newPriceFeed);
+        priceFeed = IPriceFeeds(_newPriceFeed);
         emit NewPriceFeedContract(oldPriceFeed, _newPriceFeed);
     }
 
@@ -147,13 +147,14 @@ contract Offers is IOffer, Ownable {
         offers[_countId] = offer;
 
         IERC20 stable = IERC20(offer.params.stableAddress);
-        uint8 decimals = IERC20Metadata(offer.params.stableAddress).decimals();
+        uint8 decimals = IERC20Metadata(address(stable)).decimals();
 
         uint amount = offers[_countId].advancedAmount * (10**(decimals - 2));
 
         if (toggleOracle) {
-            uint amountToTransfer = (amount * (10**priceFeed.getDecimals())) /
-                (priceFeed.getPrice());
+            uint amountToTransfer = (amount *
+                (10**priceFeed.getDecimals(address(stable)))) /
+                (priceFeed.getPrice(address(stable)));
             stable.safeTransfer(offer.params.treasuryAddress, amountToTransfer);
         } else {
             stable.safeTransfer(offer.params.treasuryAddress, amount);
@@ -224,7 +225,7 @@ contract Offers is IOffer, Ownable {
         offers[offerId].refunded = refunded;
 
         IERC20 stable = IERC20(offer.params.stableAddress);
-        uint8 decimals = IERC20Metadata(offer.params.stableAddress).decimals();
+        uint8 decimals = IERC20Metadata(address(stable)).decimals();
 
         uint amount = offers[offerId].refunded.netAmount * (10**(decimals - 2));
 
