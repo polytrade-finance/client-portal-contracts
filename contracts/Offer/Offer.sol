@@ -24,8 +24,9 @@ contract Offers is IOffer, Ownable {
     mapping(uint => bytes2) private _offerToPricingId;
     mapping(uint => OfferItem) public offers;
 
-    constructor(address pricingAddress) {
-        pricingTable = IPricingTable(pricingAddress);
+    constructor(address pricingTableAddress, address priceFeedAddress) {
+        pricingTable = IPricingTable(pricingTableAddress);
+        priceFeed = IPriceFeedUSDC(priceFeedAddress);
     }
 
     /**
