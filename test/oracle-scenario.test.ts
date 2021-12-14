@@ -1,14 +1,14 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Offers, PriceFeedUSDC, PricingTable, Token } from "../typechain";
+import { Offers, PriceFeeds, PricingTable, Token } from "../typechain";
 import { getTimestamp, increaseTime, ONE_DAY } from "./helpers";
 import { parseUnits } from "ethers/lib/utils";
 import { BigNumber } from "ethers";
 
 describe("PricingTable", function () {
   let pricingTable: PricingTable;
-  let priceFeed: PriceFeedUSDC;
+  let priceFeed: PriceFeeds;
   let offers: Offers;
   let usdcContract: Token;
   let decimals: BigNumber;
@@ -30,15 +30,6 @@ describe("PricingTable", function () {
         .connect(accounts[2])
         .transfer(addresses[1], await usdcContract.balanceOf(treasury));
     }
-  });
-
-  it("Should create PricingFeedUSDC", async () => {
-    const PriceFeed = await ethers.getContractFactory("PriceFeedUSDC");
-    priceFeed = await PriceFeed.deploy({});
-    await priceFeed.deployed();
-
-    console.log((await priceFeed.getPrice()).toString());
-    decimals = await priceFeed.getDecimals();
   });
 
   it("Should return the new PrincingTable once deployed", async function () {
@@ -199,6 +190,20 @@ describe("PricingTable", function () {
     const USDC = await ethers.getContractFactory("Token");
     usdcContract = await USDC.deploy("USD Coin", "USDC", 8);
     await usdcContract.deployed();
+  });
+
+  it("Should create PriceFeeds", async () => {
+    const PriceFeed = await ethers.getContractFactory("PriceFeeds");
+    priceFeed = await PriceFeed.deploy();
+    await priceFeed.deployed();
+
+    await priceFeed.setStableAggregator(
+      usdcContract.address,
+      "0xfE4A8cc5b5B2366C1B58Bea3858e81843581b2F7"
+    );
+
+    console.log((await priceFeed.getPrice(usdcContract.address)).toString());
+    decimals = await priceFeed.getDecimals(usdcContract.address);
   });
 
   it("Should deploy Offer Contract", async () => {
