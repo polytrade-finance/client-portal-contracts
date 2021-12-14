@@ -32,6 +32,15 @@ describe("PricingTable", function () {
     }
   });
 
+  it("Should create PricingFeedUSDC", async () => {
+    const PriceFeed = await ethers.getContractFactory("PriceFeedUSDC");
+    priceFeed = await PriceFeed.deploy({});
+    await priceFeed.deployed();
+
+    expect((await priceFeed.getPrice()).toString()).to.equal("100022934");
+    decimals = await priceFeed.getDecimals();
+  });
+
   it("Should return the new PrincingTable once deployed", async function () {
     const PricingTable = await ethers.getContractFactory("PricingTable");
     pricingTable = await PricingTable.deploy();
