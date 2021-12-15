@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 
 import "./IOffer.sol";
+import "../Chainlink/IPriceFeeds.sol";
 import "../PricingTable/IPricingTable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -14,15 +15,57 @@ contract Offers is IOffer, Ownable {
     using SafeERC20 for IERC20;
 
     IPricingTable public pricingTable;
+    IPriceFeeds public priceFeed;
 
     uint private _countId;
     uint private _precision = 1E4;
+    bool public toggleOracle;
 
     mapping(uint => bytes2) private _offerToPricingId;
     mapping(uint => OfferItem) public offers;
 
-    constructor(address pricingAddress) {
-        pricingTable = IPricingTable(pricingAddress);
+    constructor(address pricingTableAddress, address priceFeedAddress) {
+        pricingTable = IPricingTable(pricingTableAddress);
+        priceFeed = IPriceFeeds(priceFeedAddress);
+    }
+
+    /**
+     * @dev Activate usage of the Oracle
+     */
+    function activateOracle() external onlyOwner {
+        toggleOracle = true;
+        emit OracleActivated();
+    }
+
+    /**
+     * @dev De-activate usage of the Oracle
+     */
+    function deactivateOracle() external onlyOwner {
+        toggleOracle = false;
+        emit OracleDeactivated();
+    }
+
+    /**
+     * @dev Set PricingTable linked to the contract to a new PricingTable (`pricingTable`)
+     * Can only be called by the owner
+     */
+    function setPricingTableAddress(address _newPricingTable)
+        external
+        onlyOwner
+    {
+        address oldPricingTable = address(pricingTable);
+        pricingTable = IPricingTable(_newPricingTable);
+        emit NewPricingTableContract(oldPricingTable, _newPricingTable);
+    }
+
+    /**
+     * @dev Set PriceFeed linked to the contract to a new PriceFeed (`priceFeed`)
+     * Can only be called by the owner
+     */
+    function setPriceFeedAddress(address _newPriceFeed) external onlyOwner {
+        address oldPriceFeed = address(priceFeed);
+        priceFeed = IPriceFeeds(_newPriceFeed);
+        emit NewPriceFeedContract(oldPriceFeed, _newPriceFeed);
     }
 
     /**
@@ -91,7 +134,7 @@ contract Offers is IOffer, Ownable {
         );
 
         offer.reserve = (params.invoiceAmount - offer.advancedAmount);
-        offer.disbursingAdvanceDate = block.timestamp;
+        offer.disbursingAdvanceDate = uint64(block.timestamp);
 
         require(
             (offer.advancedAmount + offer.reserve) == params.invoiceAmount,
@@ -104,11 +147,18 @@ contract Offers is IOffer, Ownable {
         offers[_countId] = offer;
 
         IERC20 stable = IERC20(offer.params.stableAddress);
-        uint8 decimals = IERC20Metadata(offer.params.stableAddress).decimals();
+        uint8 decimals = IERC20Metadata(address(stable)).decimals();
 
         uint amount = offers[_countId].advancedAmount * (10**(decimals - 2));
 
-        stable.safeTransfer(offer.params.treasuryAddress, amount);
+        if (toggleOracle) {
+            uint amountToTransfer = (amount *
+                (10**priceFeed.getDecimals(address(stable)))) /
+                (priceFeed.getPrice(address(stable)));
+            stable.safeTransfer(offer.params.treasuryAddress, amountToTransfer);
+        } else {
+            stable.safeTransfer(offer.params.treasuryAddress, amount);
+        }
 
         emit OfferCreated(_countId, pricingId);
         return _countId;
@@ -125,7 +175,7 @@ contract Offers is IOffer, Ownable {
      */
     function reserveRefund(
         uint offerId,
-        uint dueDate,
+        uint64 dueDate,
         uint16 lateFee
     ) public onlyOwner {
         require(_offerToPricingId[offerId] != 0, "Offer doesn't exists");
@@ -175,7 +225,7 @@ contract Offers is IOffer, Ownable {
         offers[offerId].refunded = refunded;
 
         IERC20 stable = IERC20(offer.params.stableAddress);
-        uint8 decimals = IERC20Metadata(offer.params.stableAddress).decimals();
+        uint8 decimals = IERC20Metadata(address(stable)).decimals();
 
         uint amount = offers[offerId].refunded.netAmount * (10**(decimals - 2));
 

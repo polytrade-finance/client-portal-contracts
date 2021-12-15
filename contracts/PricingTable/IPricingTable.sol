@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.10;
 
+/// @title Offer
+/// @author Polytrade
 interface IPricingTable {
     struct PricingItem {
         uint8 minTenure;

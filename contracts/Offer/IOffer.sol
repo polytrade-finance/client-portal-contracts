@@ -33,36 +33,71 @@ error InvalidInvoiceAmount(uint invoiceAmount, uint minAmount, uint maxAmount);
 /// @param invoiceAmount, actual invoice amount
 error InvalidAvailableAmount(uint availableAmount, uint invoiceAmount);
 
-struct OfferItem {
-    uint advancedAmount;
-    uint reserve;
-    uint disbursingAdvanceDate;
-    OfferParams params;
-    OfferRefunded refunded;
-}
-
-struct OfferParams {
-    uint8 gracePeriod;
-    uint8 tenure;
-    uint16 factoringFee;
-    uint16 discountFee;
-    uint16 advanceFee;
-    address treasuryAddress;
-    address stableAddress;
-    uint invoiceAmount;
-    uint availableAmount;
-}
-
-struct OfferRefunded {
-    uint dueDate;
-    uint16 lateFee;
-    uint24 numberOfLateDays;
-    uint totalCalculatedFees;
-    uint netAmount;
-    uint rewards;
-}
-
+/// @title Offer
+/// @author Polytrade
 interface IOffer {
+    struct OfferItem {
+        uint advancedAmount;
+        uint reserve;
+        uint64 disbursingAdvanceDate;
+        OfferParams params;
+        OfferRefunded refunded;
+    }
+
+    struct OfferParams {
+        uint8 gracePeriod;
+        uint8 tenure;
+        uint16 factoringFee;
+        uint16 discountFee;
+        uint16 advanceFee;
+        address treasuryAddress;
+        address stableAddress;
+        uint invoiceAmount;
+        uint availableAmount;
+    }
+
+    struct OfferRefunded {
+        uint64 dueDate;
+        uint16 lateFee;
+        uint24 numberOfLateDays;
+        uint totalCalculatedFees;
+        uint netAmount;
+        uint rewards;
+    }
+
+    /**
+     * @dev Emitted when new offer is created
+     */
     event OfferCreated(uint indexed offerId, bytes2 pricingId);
+
+    /**
+     * @dev Emitted when Reserve is refunded
+     */
     event ReserveRefunded(uint indexed offerId, uint refundedAmount);
+
+    /**
+     * @dev Emitted when PricingTable Address is updated
+     */
+    event NewPricingTableContract(
+        address oldPricingTableAddress,
+        address newPricingTableAddress
+    );
+
+    /**
+     * @dev Emitted when PriceFeed Address is updated
+     */
+    event NewPriceFeedContract(
+        address oldPriceFeedAddress,
+        address newPriceFeedAddress
+    );
+
+    /**
+     * @dev Emitted when Oracle usage is ctivated
+     */
+    event OracleActivated();
+
+    /**
+     * @dev Emitted when Oracle usage is deactivated
+     */
+    event OracleDeactivated();
 }
