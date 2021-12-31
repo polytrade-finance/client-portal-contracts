@@ -21,6 +21,9 @@ contract Offers is IOffer, Ownable {
     uint private _precision = 1E4;
     bool public toggleOracle;
 
+    uint public totalAdvanced;
+    uint public totalRefunded;
+
     mapping(uint => bytes2) private _offerToPricingId;
     mapping(uint => OfferItem) public offers;
 
@@ -155,8 +158,10 @@ contract Offers is IOffer, Ownable {
             uint amountToTransfer = (amount *
                 (10**priceFeed.getDecimals(address(stable)))) /
                 (priceFeed.getPrice(address(stable)));
+            totalAdvanced += amountToTransfer;
             stable.safeTransfer(offer.params.treasuryAddress, amountToTransfer);
         } else {
+            totalAdvanced += amount;
             stable.safeTransfer(offer.params.treasuryAddress, amount);
         }
 
@@ -229,6 +234,7 @@ contract Offers is IOffer, Ownable {
 
         uint amount = offers[offerId].refunded.netAmount * (10**(decimals - 2));
 
+        totalRefunded += amount;
         stable.safeTransfer(offer.params.treasuryAddress, amount);
 
         emit ReserveRefunded(offerId, amount);
