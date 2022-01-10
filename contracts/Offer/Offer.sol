@@ -57,6 +57,7 @@ contract Offers is IOffer, Ownable {
         external
         onlyOwner
     {
+        require(_newPricingTable != address(0));
         address oldPricingTable = address(pricingTable);
         pricingTable = IPricingTable(_newPricingTable);
         emit NewPricingTableContract(oldPricingTable, _newPricingTable);
@@ -67,9 +68,34 @@ contract Offers is IOffer, Ownable {
      * Can only be called by the owner
      */
     function setPriceFeedAddress(address _newPriceFeed) external onlyOwner {
+        require(_newPriceFeed != address(0));
         address oldPriceFeed = address(priceFeed);
         priceFeed = IPriceFeeds(_newPriceFeed);
         emit NewPriceFeedContract(oldPriceFeed, _newPriceFeed);
+    }
+
+    /**
+     * @dev Set TreasuryAddress linked to the contract to a new treasuryAddress
+     * Can only be called by the owner
+     */
+    function setTreasuryAddress(address _newTreasury) external onlyOwner {
+        require(_newTreasury != address(0));
+        address oldTreasury = treasury;
+        treasury = _newTreasury;
+        emit NewTreasuryAddress(oldTreasury, _newTreasury);
+    }
+
+    /**
+     * @dev Set LenderPoolAddress linked to the contract to a new lenderPoolAddress
+     * Can only be called by the owner
+     */
+    function setLenderPoolAddress(
+        address stableAddress,
+        address lenderPoolAddress
+    ) external onlyOwner {
+        require(stableAddress != address(0) && lenderPoolAddress != address(0));
+        stableToPool[stableAddress] = lenderPoolAddress;
+        emit NewLenderPoolAddress(stableAddress, lenderPoolAddress);
     }
 
     /**
