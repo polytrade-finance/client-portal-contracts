@@ -217,10 +217,10 @@ contract Offers is IOffer, Ownable {
         uint64 dueDate,
         uint16 lateFee
     ) public onlyOwner {
-        require(_offerToPricingId[offerId] != 0, "Offer doesn't exists");
         require(
-            offers[offerId].refunded.netAmount == 0,
-            "Offer already refunded"
+            _offerToPricingId[offerId] != 0 &&
+                offers[offerId].refunded.netAmount == 0,
+            "Invalid Offer"
         );
 
         OfferItem memory offer = offers[offerId];
