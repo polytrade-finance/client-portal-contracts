@@ -67,7 +67,7 @@ interface IOffer {
     /**
      * @dev Emitted when new offer is created
      */
-    event OfferCreated(uint indexed offerId, bytes2 pricingId);
+    event OfferCreated(uint indexed offerId, uint16 pricingId);
 
     /**
      * @dev Emitted when Reserve is refunded

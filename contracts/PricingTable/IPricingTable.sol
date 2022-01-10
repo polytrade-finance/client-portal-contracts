@@ -5,8 +5,8 @@ pragma solidity ^0.8.11;
 /// @author Polytrade
 interface IPricingTable {
     struct PricingItem {
-        uint8 minTenure;
-        uint8 maxTenure;
+        uint16 minTenure;
+        uint16 maxTenure;
         uint16 maxAdvancedRatio;
         uint16 minDiscountFee;
         uint16 minFactoringFee;
@@ -27,9 +27,9 @@ interface IPricingTable {
      * @param maxAmount, maximum amount
      */
     function addPricingItem(
-        bytes2 pricingId,
-        uint8 minTenure,
-        uint8 maxTenure,
+        uint16 pricingId,
+        uint16 minTenure,
+        uint16 maxTenure,
         uint16 maxAdvancedRatio,
         uint16 minDiscountRange,
         uint16 minFactoringFee,
@@ -50,9 +50,9 @@ interface IPricingTable {
      * @param maxAmount, maximum amount
      */
     function updatePricingItem(
-        bytes2 pricingId,
-        uint8 minTenure,
-        uint8 maxTenure,
+        uint16 pricingId,
+        uint16 minTenure,
+        uint16 maxTenure,
         uint16 maxAdvancedRatio,
         uint16 minDiscountRange,
         uint16 minFactoringFee,
@@ -66,14 +66,14 @@ interface IPricingTable {
      * @dev Only Owner is authorized to add a Pricing Item
      * @param id, id of the pricing Item
      */
-    function removePricingItem(bytes2 id) external;
+    function removePricingItem(uint16 id) external;
 
     /**
      * @notice Returns the pricing Item
      * @param id, id of the pricing Item
      * @return returns the PricingItem (struct)
      */
-    function getPricingItem(bytes2 id)
+    function getPricingItem(uint16 id)
         external
         view
         returns (PricingItem memory);
@@ -83,9 +83,9 @@ interface IPricingTable {
      * @param id, id of the pricing Item
      * @return returns boolean if pricing is valid or not
      */
-    function isPricingItemValid(bytes2 id) external view returns (bool);
+    function isPricingItemValid(uint16 id) external view returns (bool);
 
-    event NewPricingItem(PricingItem id);
-    event UpdatedPricingItem(PricingItem id);
-    event RemovedPricingItem(bytes2 id);
+    event NewPricingItem(uint16 id, PricingItem pricingItem);
+    event UpdatedPricingItem(uint16 id, PricingItem pricingItem);
+    event RemovedPricingItem(uint16 id);
 }

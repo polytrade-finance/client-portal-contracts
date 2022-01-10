@@ -27,7 +27,7 @@ contract Offers is IOffer, Ownable {
     address public treasury;
     address public lenderPool;
 
-    mapping(uint => bytes2) private _offerToPricingId;
+    mapping(uint => uint16) private _offerToPricingId;
     mapping(uint => OfferItem) public offers;
     mapping(address => address) public stableToPool;
 
@@ -110,7 +110,7 @@ contract Offers is IOffer, Ownable {
      * @param availableAmount, amount for the available amount
      */
     function checkOfferValidity(
-        bytes2 pricingId,
+        uint16 pricingId,
         uint16 tenure,
         uint16 advanceFee,
         uint16 discountFee,
@@ -139,7 +139,7 @@ contract Offers is IOffer, Ownable {
      * @param pricingId, Id of the pricing Item
      * @param params, OfferParams(gracePeriod, tenure, factoringFee, discountFee, advanceFee, invoiceAmount, availableAmount)
      */
-    function createOffer(bytes2 pricingId, OfferParams memory params)
+    function createOffer(uint16 pricingId, OfferParams memory params)
         public
         onlyOwner
         returns (uint)
@@ -290,7 +290,7 @@ contract Offers is IOffer, Ownable {
      * @param availableAmount, amount for the available amount
      */
     function _checkParams(
-        bytes2 pricingId,
+        uint16 pricingId,
         uint16 tenure,
         uint16 advanceFee,
         uint16 discountFee,

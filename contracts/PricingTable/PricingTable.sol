@@ -7,8 +7,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 /// @title Pricing Table
 /// @author Polytrade
 contract PricingTable is IPricingTable, Ownable {
-    mapping(bytes2 => PricingItem) private _pricingItems;
-    mapping(bytes2 => bool) private _pricingStatus;
+    mapping(uint16 => PricingItem) private _pricingItems;
+    mapping(uint16 => bool) private _pricingStatus;
 
     /**
      * @notice Add a Pricing Item to the Pricing Table
@@ -23,9 +23,9 @@ contract PricingTable is IPricingTable, Ownable {
      * @param maxAmount, maximum amount
      */
     function addPricingItem(
-        bytes2 pricingId,
-        uint8 minTenure,
-        uint8 maxTenure,
+        uint16 pricingId,
+        uint16 minTenure,
+        uint16 maxTenure,
         uint16 maxAdvancedRatio,
         uint16 minDiscountRange,
         uint16 minFactoringFee,
@@ -44,7 +44,7 @@ contract PricingTable is IPricingTable, Ownable {
         _pricingItem.minFactoringFee = minFactoringFee;
         _pricingItems[pricingId] = _pricingItem;
         _pricingStatus[pricingId] = true;
-        emit NewPricingItem(_pricingItems[pricingId]);
+        emit NewPricingItem(pricingId, _pricingItems[pricingId]);
     }
 
     /**
@@ -60,9 +60,9 @@ contract PricingTable is IPricingTable, Ownable {
      * @param maxAmount, maximum amount
      */
     function updatePricingItem(
-        bytes2 pricingId,
-        uint8 minTenure,
-        uint8 maxTenure,
+        uint16 pricingId,
+        uint16 minTenure,
+        uint16 maxTenure,
         uint16 maxAdvancedRatio,
         uint16 minDiscountRange,
         uint16 minFactoringFee,
@@ -80,7 +80,7 @@ contract PricingTable is IPricingTable, Ownable {
         _pricingItems[pricingId].minDiscountFee = minDiscountRange;
         _pricingItems[pricingId].minFactoringFee = minFactoringFee;
         _pricingStatus[pricingId] = status;
-        emit UpdatedPricingItem(_pricingItems[pricingId]);
+        emit UpdatedPricingItem(pricingId ,_pricingItems[pricingId]);
     }
 
     /**
@@ -88,7 +88,7 @@ contract PricingTable is IPricingTable, Ownable {
      * @dev Only Owner is authorized to add a Pricing Item
      * @param id, id of the pricing Item
      */
-    function removePricingItem(bytes2 id) external onlyOwner {
+    function removePricingItem(uint16 id) external onlyOwner {
         delete _pricingItems[id];
         _pricingStatus[id] = false;
         emit RemovedPricingItem(id);
@@ -99,7 +99,7 @@ contract PricingTable is IPricingTable, Ownable {
      * @param id, id of the pricing Item
      * @return returns the PricingItem (struct)
      */
-    function getPricingItem(bytes2 id)
+    function getPricingItem(uint16 id)
         external
         view
         override
@@ -113,7 +113,7 @@ contract PricingTable is IPricingTable, Ownable {
      * @param id, id of the pricing Item
      * @return returns boolean if pricing is valid or not
      */
-    function isPricingItemValid(bytes2 id)
+    function isPricingItemValid(uint16 id)
         external
         view
         override
