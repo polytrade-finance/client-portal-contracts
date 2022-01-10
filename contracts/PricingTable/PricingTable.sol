@@ -4,7 +4,7 @@ pragma solidity ^0.8.11;
 import "./IPricingTable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-/// @title Princing Table
+/// @title Pricing Table
 /// @author Polytrade
 contract PricingTable is IPricingTable, Ownable {
     mapping(bytes2 => PricingItem) private _pricingItems;
