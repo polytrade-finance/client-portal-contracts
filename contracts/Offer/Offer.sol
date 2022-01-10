@@ -170,11 +170,6 @@ contract Offers is IOffer, Ownable {
         offer.reserve = (params.invoiceAmount - offer.advancedAmount);
         offer.disbursingAdvanceDate = uint64(block.timestamp);
 
-        require(
-            (offer.advancedAmount + offer.reserve) == params.invoiceAmount,
-            "advanced + reserve != invoice"
-        );
-
         _countId++;
         _offerToPricingId[_countId] = pricingId;
         offer.params = params;
