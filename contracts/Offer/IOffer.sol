@@ -46,7 +46,7 @@ interface IOffer {
 
     struct OfferParams {
         uint8 gracePeriod;
-        uint8 tenure;
+        uint16 tenure;
         uint16 factoringFee;
         uint16 discountFee;
         uint16 advanceFee;
@@ -57,8 +57,8 @@ interface IOffer {
     }
 
     struct OfferRefunded {
-        uint64 dueDate;
         uint16 lateFee;
+        uint64 dueDate;
         uint24 numberOfLateDays;
         uint totalCalculatedFees;
         uint netAmount;
