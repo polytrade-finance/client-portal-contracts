@@ -50,7 +50,6 @@ interface IOffer {
         uint16 factoringFee;
         uint16 discountFee;
         uint16 advanceFee;
-        address treasuryAddress;
         address stableAddress;
         uint invoiceAmount;
         uint availableAmount;
