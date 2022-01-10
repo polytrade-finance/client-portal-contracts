@@ -204,10 +204,12 @@ describe("PricingTable", function () {
         usdcContract.address,
         "0xfE4A8cc5b5B2366C1B58Bea3858e81843581b2F7"
       );
+    });
 
-      expect(
-        (await priceFeed.getPrice(usdcContract.address)).toString()
-      ).to.equal("100022934");
+    it("Should revert if outdated pricing feed", async () => {
+      await expect(priceFeed.getPrice(usdcContract.address)).to.be.revertedWith(
+        "Outdated pricing feed"
+      );
     });
 
     it("Should deploy Offer Contract", async () => {
