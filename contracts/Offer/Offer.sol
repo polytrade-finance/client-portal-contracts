@@ -291,7 +291,7 @@ contract Offers is IOffer, Ownable {
      */
     function _checkParams(
         bytes2 pricingId,
-        uint8 tenure,
+        uint16 tenure,
         uint16 advanceFee,
         uint16 discountFee,
         uint16 factoringFee,
