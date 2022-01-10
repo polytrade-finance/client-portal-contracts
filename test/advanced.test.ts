@@ -4,6 +4,7 @@ import { ethers } from "hardhat";
 import { Offers, PriceFeeds, PricingTable, Token } from "../typechain";
 import { getTimestamp, increaseTime, ONE_DAY } from "./helpers";
 import { parseUnits } from "ethers/lib/utils";
+import { constants } from "ethers";
 
 describe("PricingTable", function () {
   let pricingTable: PricingTable;
@@ -15,11 +16,13 @@ describe("PricingTable", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
   let treasury: string;
+  let lenderPool: string;
 
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
     treasury = addresses[2];
+    lenderPool = addresses[8];
     decimals = 8;
   });
 
