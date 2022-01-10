@@ -365,7 +365,7 @@ contract Offers is IOffer, Ownable {
     function _calculateDiscountAmount(
         uint advancedAmount,
         uint16 discountFee,
-        uint8 tenure
+        uint16 tenure
     ) private view returns (uint) {
         return (((advancedAmount * discountFee) / 365) * tenure) / _precision;
     }
