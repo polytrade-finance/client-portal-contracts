@@ -36,7 +36,7 @@ const config: HardhatUserConfig = {
     hardhat: {
       forking: {
         url: process.env.POLYGON_URL || "",
-        blockNumber: 10014550,
+        blockNumber: 23493580,
       },
       accounts: {
         accountsBalance: "1000000000000000000000000",
