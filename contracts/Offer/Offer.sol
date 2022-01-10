@@ -38,14 +38,7 @@ contract Offers is IOffer, Ownable {
     ) {
         pricingTable = IPricingTable(pricingTableAddress);
         priceFeed = IPriceFeeds(priceFeedAddress);
-    }
-
-    /**
-     * @dev Activate usage of the Oracle
-     */
-    function activateOracle() external onlyOwner {
-        toggleOracle = true;
-        emit OracleActivated();
+        treasury = treasuryAddress;
     }
 
     /**
