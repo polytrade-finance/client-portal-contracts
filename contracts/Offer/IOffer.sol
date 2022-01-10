@@ -91,9 +91,12 @@ interface IOffer {
     );
 
     /**
-     * @dev Emitted when Oracle usage is ctivated
+     * @dev Emitted when Treasury Address is updated
      */
-    event OracleActivated();
+    event NewTreasuryAddress(
+        address oldTreasuryAddress,
+        address newTreasuryAddress
+    );
 
     /**
      * @dev Emitted when Oracle usage is deactivated
