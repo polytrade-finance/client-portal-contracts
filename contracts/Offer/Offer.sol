@@ -42,11 +42,11 @@ contract Offers is IOffer, Ownable {
     }
 
     /**
-     * @dev De-activate usage of the Oracle
+     * @dev Activate/De-activate usage of the Oracle
      */
-    function deactivateOracle() external onlyOwner {
-        toggleOracle = false;
-        emit OracleDeactivated();
+    function useOracle(bool status) external onlyOwner {
+        toggleOracle = status;
+        emit OracleUsageUpdated(status);
     }
 
     /**
