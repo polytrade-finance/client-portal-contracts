@@ -214,7 +214,11 @@ describe("PricingTable", function () {
 
     it("Should deploy Offer Contract", async () => {
       const Offers = await ethers.getContractFactory("Offers");
-      offers = await Offers.deploy(pricingTable.address, priceFeed.address);
+      offers = await Offers.deploy(
+        pricingTable.address,
+        priceFeed.address,
+        treasury
+      );
       await offers.deployed();
     });
 
