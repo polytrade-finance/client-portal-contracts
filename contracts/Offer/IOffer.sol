@@ -5,7 +5,7 @@ pragma solidity ^0.8.10;
 /// @param tenure, actual tenure
 /// @param minTenure, minimum tenure
 /// @param maxTenure, maximum tenure
-error InvalidTenure(uint8 tenure, uint8 minTenure, uint8 maxTenure);
+error InvalidTenure(uint16 tenure, uint16 minTenure, uint16 maxTenure);
 
 /// AdvanceFee is higher than the maxAdvancedRatio
 /// @param advanceFee, actual advanceFee
