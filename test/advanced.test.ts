@@ -98,7 +98,7 @@ describe("PricingTable", function () {
       expect(await pricingTable.isPricingItemValid("0x606A")).to.equal(false);
     });
 
-    it("Should add 606A pricing Ite again", async () => {
+    it("Should add 606A pricing Item again", async () => {
       await pricingTable
         .addPricingItem("0x606A", 20, 60, 90, 65, 12, 5000, 10000)
         .then((tx) => tx.wait());
