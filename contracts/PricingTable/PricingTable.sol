@@ -80,7 +80,7 @@ contract PricingTable is IPricingTable, Ownable {
         _pricingItems[pricingId].minDiscountFee = minDiscountRange;
         _pricingItems[pricingId].minFactoringFee = minFactoringFee;
         _pricingStatus[pricingId] = status;
-        emit UpdatedPricingItem(pricingId ,_pricingItems[pricingId]);
+        emit UpdatedPricingItem(pricingId, _pricingItems[pricingId]);
     }
 
     /**
