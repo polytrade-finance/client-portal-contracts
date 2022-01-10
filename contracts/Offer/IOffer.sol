@@ -33,7 +33,7 @@ error InvalidInvoiceAmount(uint invoiceAmount, uint minAmount, uint maxAmount);
 /// @param invoiceAmount, actual invoice amount
 error InvalidAvailableAmount(uint availableAmount, uint invoiceAmount);
 
-/// @title Offer
+/// @title IOffer
 /// @author Polytrade
 interface IOffer {
     struct OfferItem {
