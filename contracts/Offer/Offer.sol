@@ -298,6 +298,7 @@ contract Offers is IOffer, Ownable {
         uint invoiceAmount,
         uint availableAmount
     ) private view returns (bool) {
+        require(pricingTable.isPricingItemValid(pricingId));
         IPricingTable.PricingItem memory pricing = pricingTable.getPricingItem(
             pricingId
         );
