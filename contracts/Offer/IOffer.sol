@@ -99,7 +99,15 @@ interface IOffer {
     );
 
     /**
-     * @dev Emitted when Oracle usage is deactivated
+     * @dev Emitted when LenderPool Address is updated
      */
-    event OracleDeactivated();
+    event NewLenderPoolAddress(
+        address oldLenderPoolAddress,
+        address newLenderPoolAddress
+    );
+
+    /**
+     * @dev Emitted when Oracle usage is activated or deactivated
+     */
+    event OracleUsageUpdated(bool status);
 }
