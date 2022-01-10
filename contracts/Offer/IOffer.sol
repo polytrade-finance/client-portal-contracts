@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.11;
 
 /// Tenure is not within minimum and maximum authorized
 /// @param tenure, actual tenure
 /// @param minTenure, minimum tenure
 /// @param maxTenure, maximum tenure
-error InvalidTenure(uint8 tenure, uint8 minTenure, uint8 maxTenure);
+error InvalidTenure(uint16 tenure, uint16 minTenure, uint16 maxTenure);
 
 /// AdvanceFee is higher than the maxAdvancedRatio
 /// @param advanceFee, actual advanceFee
@@ -33,7 +33,7 @@ error InvalidInvoiceAmount(uint invoiceAmount, uint minAmount, uint maxAmount);
 /// @param invoiceAmount, actual invoice amount
 error InvalidAvailableAmount(uint availableAmount, uint invoiceAmount);
 
-/// @title Offer
+/// @title IOffer
 /// @author Polytrade
 interface IOffer {
     struct OfferItem {
@@ -46,19 +46,18 @@ interface IOffer {
 
     struct OfferParams {
         uint8 gracePeriod;
-        uint8 tenure;
+        uint16 tenure;
         uint16 factoringFee;
         uint16 discountFee;
         uint16 advanceFee;
-        address treasuryAddress;
         address stableAddress;
         uint invoiceAmount;
         uint availableAmount;
     }
 
     struct OfferRefunded {
-        uint64 dueDate;
         uint16 lateFee;
+        uint64 dueDate;
         uint24 numberOfLateDays;
         uint totalCalculatedFees;
         uint netAmount;
@@ -92,12 +91,23 @@ interface IOffer {
     );
 
     /**
-     * @dev Emitted when Oracle usage is ctivated
+     * @dev Emitted when Treasury Address is updated
      */
-    event OracleActivated();
+    event NewTreasuryAddress(
+        address oldTreasuryAddress,
+        address newTreasuryAddress
+    );
 
     /**
-     * @dev Emitted when Oracle usage is deactivated
+     * @dev Emitted when LenderPool Address is updated
      */
-    event OracleDeactivated();
+    event NewLenderPoolAddress(
+        address oldLenderPoolAddress,
+        address newLenderPoolAddress
+    );
+
+    /**
+     * @dev Emitted when Oracle usage is activated or deactivated
+     */
+    event OracleUsageUpdated(bool status);
 }

@@ -4,6 +4,7 @@ import { ethers } from "hardhat";
 import { Offers, PriceFeeds, PricingTable, Token } from "../typechain";
 import { getTimestamp, increaseTime, ONE_DAY } from "./helpers";
 import { parseUnits } from "ethers/lib/utils";
+import { constants } from "ethers";
 
 describe("PricingTable", function () {
   let pricingTable: PricingTable;
@@ -15,11 +16,13 @@ describe("PricingTable", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
   let treasury: string;
+  let lenderPool: string;
 
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
     treasury = addresses[2];
+    lenderPool = addresses[8];
     decimals = 8;
   });
 
@@ -95,7 +98,7 @@ describe("PricingTable", function () {
       expect(await pricingTable.isPricingItemValid("0x606A")).to.equal(false);
     });
 
-    it("Should add 606A pricing Ite again", async () => {
+    it("Should add 606A pricing Item again", async () => {
       await pricingTable
         .addPricingItem("0x606A", 20, 60, 90, 65, 12, 5000, 10000)
         .then((tx) => tx.wait());
@@ -201,32 +204,127 @@ describe("PricingTable", function () {
         usdcContract.address,
         "0xfE4A8cc5b5B2366C1B58Bea3858e81843581b2F7"
       );
+    });
 
-      expect(
-        (await priceFeed.getPrice(usdcContract.address)).toString()
-      ).to.equal("100022934");
+    it("Should revert if outdated pricing feed", async () => {
+      await expect(priceFeed.getPrice(usdcContract.address)).to.be.revertedWith(
+        "Outdated pricing feed"
+      );
     });
 
     it("Should deploy Offer Contract", async () => {
       const Offers = await ethers.getContractFactory("Offers");
-      offers = await Offers.deploy(pricingTable.address, priceFeed.address);
+      offers = await Offers.deploy(
+        pricingTable.address,
+        priceFeed.address,
+        treasury
+      );
       await offers.deployed();
     });
 
+    it("Should set stable to lender address", async () => {
+      await offers.setLenderPoolAddress(usdcContract.address, lenderPool);
+    });
+
+    it("Should fail set stable to lender address", async () => {
+      await expect(
+        offers.setLenderPoolAddress(constants.AddressZero, lenderPool)
+      ).to.be.reverted;
+    });
+
+    it("Should fail setting pricingTable to address(0)", async () => {
+      await expect(offers.setPricingTableAddress(constants.AddressZero)).to.be
+        .reverted;
+    });
+
+    it("Should set pricingTable to address(1)", async () => {
+      await offers.setPricingTableAddress(
+        "0x0000000000000000000000000000000000000001"
+      );
+      expect(await offers.pricingTable()).to.equal(
+        "0x0000000000000000000000000000000000000001"
+      );
+    });
+
+    it("Should set pricingTable to previous PricingTable", async () => {
+      await offers.setPricingTableAddress(pricingTable.address);
+      expect(await offers.pricingTable()).to.equal(pricingTable.address);
+    });
+
+    it("Should set priceFeed to address(0)", async () => {
+      await expect(offers.setPriceFeedAddress(constants.AddressZero)).to.be
+        .reverted;
+    });
+
+    it("Should set priceFeed to address(1)", async () => {
+      await offers.setPriceFeedAddress(
+        "0x0000000000000000000000000000000000000001"
+      );
+      expect(await offers.priceFeed()).to.equal(
+        "0x0000000000000000000000000000000000000001"
+      );
+    });
+
+    it("Should set priceFeed to previous priceFeed", async () => {
+      await offers.setPriceFeedAddress(priceFeed.address);
+      expect(await offers.priceFeed()).to.equal(priceFeed.address);
+    });
+
+    it("Should set treasury to address(0)", async () => {
+      await expect(offers.setTreasuryAddress(constants.AddressZero)).to.be
+        .reverted;
+    });
+
+    it("Should set treasury to address(1)", async () => {
+      await offers.setTreasuryAddress(
+        "0x0000000000000000000000000000000000000001"
+      );
+      expect(await offers.treasury()).to.equal(
+        "0x0000000000000000000000000000000000000001"
+      );
+    });
+
+    it("Should set treasury to previous treasury", async () => {
+      await offers.setTreasuryAddress(treasury);
+      expect(await offers.treasury()).to.equal(treasury);
+    });
+
     it("Should send 100,000,000 USDT to Offer Contract", async () => {
-      await usdcContract.transfer(
-        offers.address,
+      await usdcContract.transfer(lenderPool, parseUnits("1000000", decimals));
+      expect(await usdcContract.balanceOf(lenderPool)).to.equal(
         parseUnits("1000000", decimals)
       );
-      expect(await usdcContract.balanceOf(offers.address)).to.equal(
-        parseUnits("1000000", decimals)
-      );
+
+      await usdcContract
+        .connect(accounts[8])
+        .approve(offers.address, constants.MaxUint256);
     });
 
     it("Should check validity of the offer", async () => {
       expect(
         await offers.checkOfferValidity("0x606a", 60, 90, 75, 20, 9000, 9000)
       ).to.equal(true);
+    });
+
+    it("Should fail checking validity on wrong pricing Id", async () => {
+      await expect(
+        offers.checkOfferValidity("0x6099", 60, 90, 75, 20, 9000, 9000)
+      ).to.be.reverted;
+    });
+
+    it("Should fail creating the first offer if stable not registered", async () => {
+      await expect(
+        offers.createOffer("0x606a", {
+          advanceFee: 90,
+          discountFee: 75,
+          factoringFee: 20,
+          gracePeriod: 1,
+          availableAmount: 9000,
+          invoiceAmount: 9000,
+          tenure: 60,
+          stableAddress: addresses[1],
+        })
+      ).to.be.revertedWith("Stable Address not whitelisted");
     });
 
     it("Should create first offer", async () => {
@@ -239,7 +337,6 @@ describe("PricingTable", function () {
         invoiceAmount: 9000,
         tenure: 60,
         stableAddress: usdcContract.address,
-        treasuryAddress: treasury,
       });
       const date = Math.floor(Date.now() / 1000);
       await offers.reserveRefund(1, date + 60 * 60, 2);
@@ -259,7 +356,6 @@ describe("PricingTable", function () {
         invoiceAmount: 8934578,
         tenure: 79,
         stableAddress: usdcContract.address,
-        treasuryAddress: treasury,
       });
 
       const offer = await offers.offers(offerId);
@@ -305,7 +401,6 @@ describe("PricingTable", function () {
         invoiceAmount: 8934578,
         tenure: 45,
         stableAddress: usdcContract.address,
-        treasuryAddress: treasury,
       });
 
       const offer = await offers.offers(offerId);
@@ -351,7 +446,6 @@ describe("PricingTable", function () {
         invoiceAmount: 8934578,
         tenure: 100,
         stableAddress: usdcContract.address,
-        treasuryAddress: treasury,
       });
 
       const offer = await offers.offers(offerId);
@@ -398,7 +492,6 @@ describe("PricingTable", function () {
           invoiceAmount: 8934578,
           tenure: 22,
           stableAddress: usdcContract.address,
-          treasuryAddress: treasury,
         })
       ).to.be.revertedWith("InvalidFactoringFee(40, 50)");
     });
@@ -413,7 +506,6 @@ describe("PricingTable", function () {
         availableAmount: 900000,
         tenure: 60,
         stableAddress: usdcContract.address,
-        treasuryAddress: treasury,
       });
 
       const offer = await offers.offers(offerId);
@@ -462,7 +554,6 @@ describe("PricingTable", function () {
         availableAmount: 900000,
         tenure: 95,
         stableAddress: usdcContract.address,
-        treasuryAddress: treasury,
       });
       const offer = await offers.offers(offerId);
       expect(offer.advancedAmount).to.equal("801000");
@@ -508,7 +599,6 @@ describe("PricingTable", function () {
           availableAmount: 900000,
           tenure: 120,
           stableAddress: usdcContract.address,
-          treasuryAddress: treasury,
         })
       ).to.be.revertedWith("InvalidDiscountFee(730, 800)");
     });
@@ -523,7 +613,6 @@ describe("PricingTable", function () {
         availableAmount: 900000,
         tenure: 30,
         stableAddress: usdcContract.address,
-        treasuryAddress: treasury,
       });
 
       const offer = await offers.offers(offerId);
@@ -562,13 +651,13 @@ describe("PricingTable", function () {
     it("Should fail reserveRefund if already refunded for Offer(7) ", async (offerId: number = 7) => {
       await expect(
         offers.reserveRefund(offerId, timestamp + 9 * ONE_DAY, 2750)
-      ).to.be.revertedWith("Offer already refunded");
+      ).to.be.revertedWith("Invalid Offer");
     });
 
     it("Should fail reserveRefund for inexisting Offer(8) ", async (offerId: number = 8) => {
       await expect(
         offers.reserveRefund(offerId, timestamp + 9 * ONE_DAY, 2750)
-      ).to.be.revertedWith("Offer doesn't exists");
+      ).to.be.revertedWith("Invalid Offer");
     });
 
     it("Should fail create Offer with InvalidAdvanceFee", async () => {
@@ -582,7 +671,6 @@ describe("PricingTable", function () {
           availableAmount: 900000,
           tenure: 120,
           stableAddress: usdcContract.address,
-          treasuryAddress: treasury,
         })
       ).to.be.revertedWith("InvalidAdvanceFee(9200, 9000)");
     });
@@ -598,7 +686,6 @@ describe("PricingTable", function () {
           availableAmount: 900000,
           tenure: 120,
           stableAddress: usdcContract.address,
-          treasuryAddress: treasury,
         })
       ).to.be.revertedWith("InvalidFactoringFee(127, 227)");
     });
@@ -614,7 +701,6 @@ describe("PricingTable", function () {
           availableAmount: 9000000,
           tenure: 120,
           stableAddress: usdcContract.address,
-          treasuryAddress: treasury,
         })
       ).to.be.revertedWith("InvalidInvoiceAmount(10000000, 500000, 1000000)");
     });
@@ -630,7 +716,6 @@ describe("PricingTable", function () {
           availableAmount: 9000000,
           tenure: 20,
           stableAddress: usdcContract.address,
-          treasuryAddress: treasury,
         })
       ).to.be.revertedWith("InvalidTenure(20, 120, 180)");
     });
@@ -646,7 +731,6 @@ describe("PricingTable", function () {
           availableAmount: 1000000,
           tenure: 120,
           stableAddress: usdcContract.address,
-          treasuryAddress: treasury,
         })
       ).to.be.revertedWith("InvalidAvailableAmount(1000000, 900000)");
     });

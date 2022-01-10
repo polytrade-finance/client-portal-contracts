@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.11;
 
 import "./IOffer.sol";
 import "../Chainlink/IPriceFeeds.sol";
@@ -18,34 +18,35 @@ contract Offers is IOffer, Ownable {
     IPriceFeeds public priceFeed;
 
     uint private _countId;
-    uint private _precision = 1E4;
+    uint16 private _precision = 1E4;
     bool public toggleOracle;
 
     uint public totalAdvanced;
     uint public totalRefunded;
 
+    address public treasury;
+    address public lenderPool;
+
     mapping(uint => bytes2) private _offerToPricingId;
     mapping(uint => OfferItem) public offers;
+    mapping(address => address) public stableToPool;
 
-    constructor(address pricingTableAddress, address priceFeedAddress) {
+    constructor(
+        address pricingTableAddress,
+        address priceFeedAddress,
+        address treasuryAddress
+    ) {
         pricingTable = IPricingTable(pricingTableAddress);
         priceFeed = IPriceFeeds(priceFeedAddress);
+        treasury = treasuryAddress;
     }
 
     /**
-     * @dev Activate usage of the Oracle
+     * @dev Activate/De-activate usage of the Oracle
      */
-    function activateOracle() external onlyOwner {
-        toggleOracle = true;
-        emit OracleActivated();
-    }
-
-    /**
-     * @dev De-activate usage of the Oracle
-     */
-    function deactivateOracle() external onlyOwner {
-        toggleOracle = false;
-        emit OracleDeactivated();
+    function useOracle(bool status) external onlyOwner {
+        toggleOracle = status;
+        emit OracleUsageUpdated(status);
     }
 
     /**
@@ -56,6 +57,7 @@ contract Offers is IOffer, Ownable {
         external
         onlyOwner
     {
+        require(_newPricingTable != address(0));
         address oldPricingTable = address(pricingTable);
         pricingTable = IPricingTable(_newPricingTable);
         emit NewPricingTableContract(oldPricingTable, _newPricingTable);
@@ -66,9 +68,34 @@ contract Offers is IOffer, Ownable {
      * Can only be called by the owner
      */
     function setPriceFeedAddress(address _newPriceFeed) external onlyOwner {
+        require(_newPriceFeed != address(0));
         address oldPriceFeed = address(priceFeed);
         priceFeed = IPriceFeeds(_newPriceFeed);
         emit NewPriceFeedContract(oldPriceFeed, _newPriceFeed);
+    }
+
+    /**
+     * @dev Set TreasuryAddress linked to the contract to a new treasuryAddress
+     * Can only be called by the owner
+     */
+    function setTreasuryAddress(address _newTreasury) external onlyOwner {
+        require(_newTreasury != address(0));
+        address oldTreasury = treasury;
+        treasury = _newTreasury;
+        emit NewTreasuryAddress(oldTreasury, _newTreasury);
+    }
+
+    /**
+     * @dev Set LenderPoolAddress linked to the contract to a new lenderPoolAddress
+     * Can only be called by the owner
+     */
+    function setLenderPoolAddress(
+        address stableAddress,
+        address lenderPoolAddress
+    ) external onlyOwner {
+        require(stableAddress != address(0) && lenderPoolAddress != address(0));
+        stableToPool[stableAddress] = lenderPoolAddress;
+        emit NewLenderPoolAddress(stableAddress, lenderPoolAddress);
     }
 
     /**
@@ -84,7 +111,7 @@ contract Offers is IOffer, Ownable {
      */
     function checkOfferValidity(
         bytes2 pricingId,
-        uint8 tenure,
+        uint16 tenure,
         uint16 advanceFee,
         uint16 discountFee,
         uint16 factoringFee,
@@ -118,6 +145,10 @@ contract Offers is IOffer, Ownable {
         returns (uint)
     {
         require(
+            stableToPool[params.stableAddress] != address(0),
+            "Stable Address not whitelisted"
+        );
+        require(
             _checkParams(
                 pricingId,
                 params.tenure,
@@ -139,11 +170,6 @@ contract Offers is IOffer, Ownable {
         offer.reserve = (params.invoiceAmount - offer.advancedAmount);
         offer.disbursingAdvanceDate = uint64(block.timestamp);
 
-        require(
-            (offer.advancedAmount + offer.reserve) == params.invoiceAmount,
-            "advanced + reserve != invoice"
-        );
-
         _countId++;
         _offerToPricingId[_countId] = pricingId;
         offer.params = params;
@@ -159,10 +185,18 @@ contract Offers is IOffer, Ownable {
                 (10**priceFeed.getDecimals(address(stable)))) /
                 (priceFeed.getPrice(address(stable)));
             totalAdvanced += amountToTransfer;
-            stable.safeTransfer(offer.params.treasuryAddress, amountToTransfer);
+            stable.safeTransferFrom(
+                stableToPool[address(stable)],
+                treasury,
+                amountToTransfer
+            );
         } else {
             totalAdvanced += amount;
-            stable.safeTransfer(offer.params.treasuryAddress, amount);
+            stable.safeTransferFrom(
+                stableToPool[address(stable)],
+                treasury,
+                amount
+            );
         }
 
         emit OfferCreated(_countId, pricingId);
@@ -183,10 +217,10 @@ contract Offers is IOffer, Ownable {
         uint64 dueDate,
         uint16 lateFee
     ) public onlyOwner {
-        require(_offerToPricingId[offerId] != 0, "Offer doesn't exists");
         require(
-            offers[offerId].refunded.netAmount == 0,
-            "Offer already refunded"
+            _offerToPricingId[offerId] != 0 &&
+                offers[offerId].refunded.netAmount == 0,
+            "Invalid Offer"
         );
 
         OfferItem memory offer = offers[offerId];
@@ -235,7 +269,11 @@ contract Offers is IOffer, Ownable {
         uint amount = offers[offerId].refunded.netAmount * (10**(decimals - 2));
 
         totalRefunded += amount;
-        stable.safeTransfer(offer.params.treasuryAddress, amount);
+        stable.safeTransferFrom(
+            stableToPool[address(stable)],
+            treasury,
+            amount
+        );
 
         emit ReserveRefunded(offerId, amount);
     }
@@ -253,13 +291,14 @@ contract Offers is IOffer, Ownable {
      */
     function _checkParams(
         bytes2 pricingId,
-        uint8 tenure,
+        uint16 tenure,
         uint16 advanceFee,
         uint16 discountFee,
         uint16 factoringFee,
         uint invoiceAmount,
         uint availableAmount
     ) private view returns (bool) {
+        require(pricingTable.isPricingItemValid(pricingId));
         IPricingTable.PricingItem memory pricing = pricingTable.getPricingItem(
             pricingId
         );
@@ -326,7 +365,7 @@ contract Offers is IOffer, Ownable {
     function _calculateDiscountAmount(
         uint advancedAmount,
         uint16 discountFee,
-        uint8 tenure
+        uint16 tenure
     ) private view returns (uint) {
         return (((advancedAmount * discountFee) / 365) * tenure) / _precision;
     }

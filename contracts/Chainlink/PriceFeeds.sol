@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.11;
 
 import "./IPriceFeeds.sol";
 import "./AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-/// @title Offer
+/// @title PriceFeeds
 /// @author Polytrade
 contract PriceFeeds is IPriceFeeds, Ownable {
     /// Mapping stableAddress to its USD Aggregator
@@ -31,8 +31,12 @@ contract PriceFeeds is IPriceFeeds, Ownable {
      * @return price of the stable against USD dollar
      */
     function getPrice(address stableAddress) public view returns (uint) {
-        (, int price, , , ) = stableAggregators[stableAddress]
+        (, int price, , uint timestamp, ) = stableAggregators[stableAddress]
             .latestRoundData();
+        require(
+            block.timestamp - timestamp >= 24 hours,
+            "Outdated pricing feed"
+        );
 
         return uint(price);
     }

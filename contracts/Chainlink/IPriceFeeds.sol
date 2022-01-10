@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.11;
 
-/// @title Offer
+/// @title IPriceFeeds
 /// @author Polytrade
 interface IPriceFeeds {
     /**

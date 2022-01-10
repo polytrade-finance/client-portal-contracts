@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.10;
+pragma solidity ^0.8.11;
 
-/// @title Offer
+/// @title IPricingTable
 /// @author Polytrade
 interface IPricingTable {
     struct PricingItem {
