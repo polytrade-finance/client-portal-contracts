@@ -185,10 +185,18 @@ contract Offers is IOffer, Ownable {
                 (10**priceFeed.getDecimals(address(stable)))) /
                 (priceFeed.getPrice(address(stable)));
             totalAdvanced += amountToTransfer;
-            stable.safeTransfer(offer.params.treasuryAddress, amountToTransfer);
+            stable.safeTransferFrom(
+                stableToPool[address(stable)],
+                treasury,
+                amountToTransfer
+            );
         } else {
             totalAdvanced += amount;
-            stable.safeTransfer(offer.params.treasuryAddress, amount);
+            stable.safeTransferFrom(
+                stableToPool[address(stable)],
+                treasury,
+                amount
+            );
         }
 
         emit OfferCreated(_countId, pricingId);
