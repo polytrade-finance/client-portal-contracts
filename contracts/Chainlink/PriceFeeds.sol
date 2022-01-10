@@ -31,8 +31,12 @@ contract PriceFeeds is IPriceFeeds, Ownable {
      * @return price of the stable against USD dollar
      */
     function getPrice(address stableAddress) public view returns (uint) {
-        (, int price, , , ) = stableAggregators[stableAddress]
+        (, int price, , uint timestamp, ) = stableAggregators[stableAddress]
             .latestRoundData();
+        require(
+            block.timestamp - timestamp >= 24 hours,
+            "Outdated pricing feed"
+        );
 
         return uint(price);
     }
