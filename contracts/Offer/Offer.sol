@@ -31,7 +31,11 @@ contract Offers is IOffer, Ownable {
     mapping(uint => OfferItem) public offers;
     mapping(address => address) public stableToPool;
 
-    constructor(address pricingTableAddress, address priceFeedAddress) {
+    constructor(
+        address pricingTableAddress,
+        address priceFeedAddress,
+        address treasuryAddress
+    ) {
         pricingTable = IPricingTable(pricingTableAddress);
         priceFeed = IPriceFeeds(priceFeedAddress);
     }
