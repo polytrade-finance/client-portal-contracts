@@ -145,6 +145,10 @@ contract Offers is IOffer, Ownable {
         returns (uint)
     {
         require(
+            stableToPool[params.stableAddress] != address(0),
+            "Stable Address not whitelisted"
+        );
+        require(
             _checkParams(
                 pricingId,
                 params.tenure,
