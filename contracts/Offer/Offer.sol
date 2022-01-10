@@ -269,7 +269,11 @@ contract Offers is IOffer, Ownable {
         uint amount = offers[offerId].refunded.netAmount * (10**(decimals - 2));
 
         totalRefunded += amount;
-        stable.safeTransfer(offer.params.treasuryAddress, amount);
+        stable.safeTransferFrom(
+            stableToPool[address(stable)],
+            treasury,
+            amount
+        );
 
         emit ReserveRefunded(offerId, amount);
     }
