@@ -208,8 +208,8 @@ describe("PricingTable", function () {
   });
 
   it("Should set Outdated limit", async () => {
-    await priceFeed.setOutdatedLimit(30000);
-    expect(await priceFeed.outdatedLimit()).to.equal(30000);
+    await priceFeed.setOutdatedLimit("30000");
+    expect(await priceFeed.outdatedLimit()).to.equal("108000000");
   });
 
   it("Should deploy Offer Contract", async () => {
