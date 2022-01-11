@@ -5,9 +5,13 @@ import "./IPriceFeeds.sol";
 import "./AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
+import "hardhat/console.sol";
+
 /// @title PriceFeeds
 /// @author Polytrade
 contract PriceFeeds is IPriceFeeds, Ownable {
+    uint public outdatedLimit;
+
     /// Mapping stableAddress to its USD Aggregator
     mapping(address => AggregatorV3Interface) public stableAggregators;
 
@@ -25,6 +29,15 @@ contract PriceFeeds is IPriceFeeds, Ownable {
     }
 
     /**
+     * @notice Set limit for a price feed to be outdated
+     * @dev Add a mapping stableAddress to aggregator
+     * @param limitInHours, limit (number of hours)
+     */
+    function setOutdatedLimit(uint limitInHours) external onlyOwner {
+        outdatedLimit = 1 hours * limitInHours;
+    }
+
+    /**
      * @notice Get the price of the stableAddress against USD dollar
      * @dev Query Chainlink aggregator to get Stable/USD price
      * @param stableAddress, address of the stable to be queried
@@ -34,7 +47,7 @@ contract PriceFeeds is IPriceFeeds, Ownable {
         (, int price, , uint timestamp, ) = stableAggregators[stableAddress]
             .latestRoundData();
         require(
-            block.timestamp - timestamp >= 24 hours,
+            block.timestamp - timestamp <= outdatedLimit,
             "Outdated pricing feed"
         );
 

@@ -207,6 +207,11 @@ describe("PricingTable", function () {
     decimals = await priceFeed.getDecimals(usdcContract.address);
   });
 
+  it("Should set Outdated limit", async () => {
+    await priceFeed.setOutdatedLimit("30000");
+    expect(await priceFeed.outdatedLimit()).to.equal("108000000");
+  });
+
   it("Should deploy Offer Contract", async () => {
     const Offers = await ethers.getContractFactory("Offers");
     offers = await Offers.deploy(
