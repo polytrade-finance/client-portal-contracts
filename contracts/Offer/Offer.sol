@@ -137,45 +137,67 @@ contract Offers is IOffer, Ownable {
      * @dev emits OfferCreated event
      * @dev send Advance Amount to treasury
      * @param pricingId, Id of the pricing Item
-     * @param params, OfferParams(gracePeriod, tenure, factoringFee, discountFee, advanceFee, invoiceAmount, availableAmount)
+     * @param advanceFee;
+     * @param discountFee;
+     * @param factoringFee;
+     * @param gracePeriod;
+     * @param availableAmount;
+     * @param invoiceAmount;
+     * @param tenure;
+     * @param stableAddress;
      */
-    function createOffer(uint16 pricingId, OfferParams memory params)
-        public
-        onlyOwner
-        returns (uint)
-    {
+    function createOffer(
+        uint16 pricingId,
+        uint16 advanceFee,
+        uint16 discountFee,
+        uint16 factoringFee,
+        uint8 gracePeriod,
+        uint invoiceAmount,
+        uint availableAmount,
+        uint16 tenure,
+        address stableAddress
+    ) public onlyOwner returns (uint) {
         require(
-            stableToPool[params.stableAddress] != address(0),
+            stableToPool[stableAddress] != address(0),
             "Stable Address not whitelisted"
         );
         require(
             _checkParams(
                 pricingId,
-                params.tenure,
-                params.advanceFee,
-                params.discountFee,
-                params.factoringFee,
-                params.invoiceAmount,
-                params.availableAmount
+                tenure,
+                advanceFee,
+                discountFee,
+                factoringFee,
+                invoiceAmount,
+                availableAmount
             ),
             "Invalid offer parameters"
         );
 
         OfferItem memory offer;
         offer.advancedAmount = _calculateAdvancedAmount(
-            params.availableAmount,
-            params.advanceFee
+            availableAmount,
+            advanceFee
         );
 
-        offer.reserve = (params.invoiceAmount - offer.advancedAmount);
+        offer.reserve = (invoiceAmount - offer.advancedAmount);
         offer.disbursingAdvanceDate = uint64(block.timestamp);
 
         _countId++;
         _offerToPricingId[_countId] = pricingId;
-        offer.params = params;
+        offer.params = OfferParams({
+            gracePeriod: gracePeriod,
+            tenure: tenure,
+            factoringFee: factoringFee,
+            discountFee: discountFee,
+            advanceFee: advanceFee,
+            stableAddress: stableAddress,
+            invoiceAmount: invoiceAmount,
+            availableAmount: availableAmount
+        });
         offers[_countId] = offer;
 
-        IERC20 stable = IERC20(offer.params.stableAddress);
+        IERC20 stable = IERC20(stableAddress);
         uint8 decimals = IERC20Metadata(address(stable)).decimals();
 
         uint amount = offers[_countId].advancedAmount * (10**(decimals - 2));

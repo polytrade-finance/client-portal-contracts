@@ -314,30 +314,32 @@ describe("PricingTable", function () {
 
     it("Should fail creating the first offer if stable not registered", async () => {
       await expect(
-        offers.createOffer("0x606a", {
-          advanceFee: 90,
-          discountFee: 75,
-          factoringFee: 20,
-          gracePeriod: 1,
-          availableAmount: 9000,
-          invoiceAmount: 9000,
-          tenure: 60,
-          stableAddress: addresses[1],
-        })
+        offers.createOffer(
+          "0x606a",
+          90,
+          75,
+          20,
+          1,
+          9000,
+          9000,
+          60,
+          addresses[1]
+        )
       ).to.be.revertedWith("Stable Address not whitelisted");
     });
 
     it("Should create first offer", async () => {
-      await offers.createOffer("0x606a", {
-        advanceFee: 90,
-        discountFee: 75,
-        factoringFee: 20,
-        gracePeriod: 1,
-        availableAmount: 9000,
-        invoiceAmount: 9000,
-        tenure: 60,
-        stableAddress: usdcContract.address,
-      });
+      await offers.createOffer(
+        "0x606a",
+        90,
+        75,
+        20,
+        1,
+        9000,
+        9000,
+        60,
+        usdcContract.address
+      );
       const date = Math.floor(Date.now() / 1000);
       await offers.reserveRefund(1, date + 60 * 60, 2);
 
@@ -347,16 +349,17 @@ describe("PricingTable", function () {
     });
 
     it("Should create Offer(2) scenario 1 grade A with Invoice == Available", async (offerId: number = 2) => {
-      await offers.createOffer("0x57A2", {
-        advanceFee: 8800,
-        discountFee: 390,
-        factoringFee: 135,
-        gracePeriod: 1,
-        availableAmount: 8934578,
-        invoiceAmount: 8934578,
-        tenure: 79,
-        stableAddress: usdcContract.address,
-      });
+      await offers.createOffer(
+        "0x57A2",
+        8800,
+        390,
+        135,
+        1,
+        8934578,
+        8934578,
+        79,
+        usdcContract.address
+      );
 
       const offer = await offers.offers(offerId);
       expect(offer.advancedAmount).to.equal("7862428");
@@ -384,7 +387,6 @@ describe("PricingTable", function () {
       expect(offer.refunded.numberOfLateDays).to.equal(0);
       expect(offer.refunded.totalCalculatedFees).to.equal("186983");
       expect(offer.refunded.netAmount).to.equal("885167");
-      expect(offer.refunded.rewards).to.equal("0");
 
       expect(await usdcContract.balanceOf(treasury)).to.equal(
         parseUnits("8851.67", decimals)
@@ -392,16 +394,17 @@ describe("PricingTable", function () {
     });
 
     it("Should create Offer(3) scenario 2 grade A with Invoice == Available", async (offerId: number = 3) => {
-      await offers.createOffer("0x643A", {
-        advanceFee: 8500,
-        discountFee: 375,
-        factoringFee: 80,
-        gracePeriod: 1,
-        availableAmount: 8934578,
-        invoiceAmount: 8934578,
-        tenure: 45,
-        stableAddress: usdcContract.address,
-      });
+      await offers.createOffer(
+        "0x643A",
+        8500,
+        375,
+        80,
+        1,
+        8934578,
+        8934578,
+        45,
+        usdcContract.address
+      );
 
       const offer = await offers.offers(offerId);
       expect(offer.advancedAmount).to.equal("7594391");
@@ -429,7 +432,6 @@ describe("PricingTable", function () {
       expect(offer.refunded.numberOfLateDays).to.equal(0);
       expect(offer.refunded.totalCalculatedFees).to.equal("106587");
       expect(offer.refunded.netAmount).to.equal("1233600");
-      expect(offer.refunded.rewards).to.equal("0");
 
       expect(await usdcContract.balanceOf(treasury)).to.equal(
         parseUnits("12336.0", decimals)
@@ -437,16 +439,17 @@ describe("PricingTable", function () {
     });
 
     it("Should create Offer(4) scenario 3 grade B with Invoice == Available", async (offerId: number = 4) => {
-      await offers.createOffer("0x684B", {
-        advanceFee: 7000,
-        discountFee: 445,
-        factoringFee: 256,
-        gracePeriod: 1,
-        availableAmount: 8934578,
-        invoiceAmount: 8934578,
-        tenure: 100,
-        stableAddress: usdcContract.address,
-      });
+      await offers.createOffer(
+        "0x684B",
+        7000,
+        445,
+        256,
+        1,
+        8934578,
+        8934578,
+        100,
+        usdcContract.address
+      );
 
       const offer = await offers.offers(offerId);
       expect(offer.advancedAmount).to.equal("6254204");
@@ -474,7 +477,6 @@ describe("PricingTable", function () {
       expect(offer.refunded.numberOfLateDays).to.equal(0);
       expect(offer.refunded.totalCalculatedFees).to.equal("304974");
       expect(offer.refunded.netAmount).to.equal("2375400");
-      expect(offer.refunded.rewards).to.equal("0");
 
       expect(await usdcContract.balanceOf(treasury)).to.equal(
         parseUnits("23754.0", decimals)
@@ -483,30 +485,32 @@ describe("PricingTable", function () {
 
     it("Should fail creating Offer(5) scenario 4 grade B with Invoice == Available", async () => {
       await expect(
-        offers.createOffer("0x624B", {
-          advanceFee: 7200,
-          discountFee: 430,
-          factoringFee: 40,
-          gracePeriod: 1,
-          availableAmount: 8934578,
-          invoiceAmount: 8934578,
-          tenure: 22,
-          stableAddress: usdcContract.address,
-        })
+        offers.createOffer(
+          "0x624B",
+          7200,
+          430,
+          40,
+          1,
+          8934578,
+          8934578,
+          22,
+          usdcContract.address
+        )
       ).to.be.revertedWith("InvalidFactoringFee(40, 50)");
     });
 
     it("Should create Offer(5) scenario 1 grade B with Invoice != Available", async (offerId: number = 5) => {
-      await offers.createOffer("0x647A", {
-        advanceFee: 8000,
-        discountFee: 750,
-        factoringFee: 180,
-        gracePeriod: 2,
-        invoiceAmount: 1000000,
-        availableAmount: 900000,
-        tenure: 60,
-        stableAddress: usdcContract.address,
-      });
+      await offers.createOffer(
+        "0x647A",
+        8000,
+        750,
+        180,
+        2,
+        1000000,
+        900000,
+        60,
+        usdcContract.address
+      );
 
       const offer = await offers.offers(offerId);
       expect(offer.advancedAmount).to.equal("720000");
@@ -537,7 +541,6 @@ describe("PricingTable", function () {
       expect(offer.refunded.numberOfLateDays).to.equal(8);
       expect(offer.refunded.totalCalculatedFees).to.equal("31215");
       expect(offer.refunded.netAmount).to.equal("248785");
-      expect(offer.refunded.rewards).to.equal("0");
 
       expect(await usdcContract.balanceOf(treasury)).to.equal(
         parseUnits("2487.85", decimals)
@@ -545,16 +548,17 @@ describe("PricingTable", function () {
     });
 
     it("Should create Offer(6) scenario 2 grade B with Invoice != Available", async (offerId: number = 6) => {
-      await offers.createOffer("0x668B", {
-        advanceFee: 8900,
-        discountFee: 800,
-        factoringFee: 253,
-        gracePeriod: 6,
-        invoiceAmount: 1000000,
-        availableAmount: 900000,
-        tenure: 95,
-        stableAddress: usdcContract.address,
-      });
+      await offers.createOffer(
+        "0x668B",
+        8900,
+        800,
+        253,
+        6,
+        1000000,
+        900000,
+        95,
+        usdcContract.address
+      );
       const offer = await offers.offers(offerId);
       expect(offer.advancedAmount).to.equal("801000");
       expect(offer.reserve).to.equal("199000");
@@ -581,7 +585,6 @@ describe("PricingTable", function () {
       expect(offer.refunded.numberOfLateDays).to.equal(0);
       expect(offer.refunded.totalCalculatedFees).to.equal("41978");
       expect(offer.refunded.netAmount).to.equal("157022");
-      expect(offer.refunded.rewards).to.equal("0");
 
       expect(await usdcContract.balanceOf(treasury)).to.equal(
         parseUnits("1570.22", decimals)
@@ -590,30 +593,32 @@ describe("PricingTable", function () {
 
     it("Should fail create Offer scenario 3 grade C with InvalidDiscountFee", async () => {
       await expect(
-        offers.createOffer("0x689C", {
-          advanceFee: 7200,
-          discountFee: 730,
-          factoringFee: 227,
-          gracePeriod: 5,
-          invoiceAmount: 1000000,
-          availableAmount: 900000,
-          tenure: 120,
-          stableAddress: usdcContract.address,
-        })
+        offers.createOffer(
+          "0x689C",
+          7200,
+          730,
+          227,
+          5,
+          1000000,
+          900000,
+          120,
+          usdcContract.address
+        )
       ).to.be.revertedWith("InvalidDiscountFee(730, 800)");
     });
 
     it("Should create Offer(7) scenario 4 grade C with Invoice != Available", async (offerId: number = 7) => {
-      await offers.createOffer("0x629C", {
-        advanceFee: 9000,
-        discountFee: 820,
-        factoringFee: 195,
-        gracePeriod: 9,
-        invoiceAmount: 1000000,
-        availableAmount: 900000,
-        tenure: 30,
-        stableAddress: usdcContract.address,
-      });
+      await offers.createOffer(
+        "0x629C",
+        9000,
+        820,
+        195,
+        9,
+        1000000,
+        900000,
+        30,
+        usdcContract.address
+      );
 
       const offer = await offers.offers(offerId);
       expect(offer.advancedAmount).to.equal("810000");
@@ -641,7 +646,6 @@ describe("PricingTable", function () {
       expect(offer.refunded.numberOfLateDays).to.equal(0);
       expect(offer.refunded.totalCalculatedFees).to.equal("24959");
       expect(offer.refunded.netAmount).to.equal("165041");
-      expect(offer.refunded.rewards).to.equal("0");
 
       expect(await usdcContract.balanceOf(treasury)).to.equal(
         parseUnits("1650.41", decimals)
@@ -662,76 +666,81 @@ describe("PricingTable", function () {
 
     it("Should fail create Offer with InvalidAdvanceFee", async () => {
       await expect(
-        offers.createOffer("0x689C", {
-          advanceFee: 9200,
-          discountFee: 800,
-          factoringFee: 227,
-          gracePeriod: 5,
-          invoiceAmount: 1000000,
-          availableAmount: 900000,
-          tenure: 120,
-          stableAddress: usdcContract.address,
-        })
+        offers.createOffer(
+          "0x689C",
+          9200,
+          800,
+          227,
+          5,
+          1000000,
+          900000,
+          120,
+          usdcContract.address
+        )
       ).to.be.revertedWith("InvalidAdvanceFee(9200, 9000)");
     });
 
     it("Should fail create Offer with InvalidFactoringFee", async () => {
       await expect(
-        offers.createOffer("0x689C", {
-          advanceFee: 9000,
-          discountFee: 800,
-          factoringFee: 127,
-          gracePeriod: 5,
-          invoiceAmount: 1000000,
-          availableAmount: 900000,
-          tenure: 120,
-          stableAddress: usdcContract.address,
-        })
+        offers.createOffer(
+          "0x689C",
+          9000,
+          800,
+          127,
+          5,
+          1000000,
+          900000,
+          120,
+          usdcContract.address
+        )
       ).to.be.revertedWith("InvalidFactoringFee(127, 227)");
     });
 
     it("Should fail create Offer with InvalidAmount", async () => {
       await expect(
-        offers.createOffer("0x689C", {
-          advanceFee: 9000,
-          discountFee: 800,
-          factoringFee: 227,
-          gracePeriod: 5,
-          invoiceAmount: 10000000,
-          availableAmount: 9000000,
-          tenure: 120,
-          stableAddress: usdcContract.address,
-        })
+        offers.createOffer(
+          "0x689C",
+          9000,
+          800,
+          227,
+          5,
+          10000000,
+          9000000,
+          120,
+          usdcContract.address
+        )
       ).to.be.revertedWith("InvalidInvoiceAmount(10000000, 500000, 1000000)");
     });
 
     it("Should fail create Offer with Invalid Tenure", async () => {
       await expect(
-        offers.createOffer("0x689C", {
-          advanceFee: 9000,
-          discountFee: 800,
-          factoringFee: 227,
-          gracePeriod: 5,
-          invoiceAmount: 10000000,
-          availableAmount: 9000000,
-          tenure: 20,
-          stableAddress: usdcContract.address,
-        })
+        offers.createOffer(
+          "0x689C",
+          9000,
+          800,
+          227,
+          5,
+          10000000,
+          9000000,
+          20,
+          usdcContract.address
+        )
       ).to.be.revertedWith("InvalidTenure(20, 120, 180)");
     });
 
     it("Should fail create Offer with available amount higher than invoice amount", async () => {
       await expect(
-        offers.createOffer("0x689C", {
-          advanceFee: 9000,
-          discountFee: 800,
-          factoringFee: 227,
-          gracePeriod: 5,
-          invoiceAmount: 900000,
-          availableAmount: 1000000,
-          tenure: 120,
-          stableAddress: usdcContract.address,
-        })
+        offers.createOffer(
+          "0x689C",
+          9000,
+          800,
+          227,
+          5,
+          900000,
+          1000000,
+          120,
+          usdcContract.address
+        )
       ).to.be.revertedWith("InvalidAvailableAmount(1000000, 900000)");
     });
   });
