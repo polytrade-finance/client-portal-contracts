@@ -61,7 +61,6 @@ interface IOffer {
         uint24 numberOfLateDays;
         uint totalCalculatedFees;
         uint netAmount;
-        uint rewards;
     }
 
     /**
