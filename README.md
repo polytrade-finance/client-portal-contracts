@@ -1,4 +1,4 @@
-# Polytrade - Smart contracts - Solidity
+# Polytrade - Client Portal - Smart contracts - Solidity
 
 ## `PricingTable`
 
