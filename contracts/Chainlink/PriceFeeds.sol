@@ -24,6 +24,7 @@ contract PriceFeeds is IPriceFeeds, Ownable {
         onlyOwner
     {
         stableAggregators[stable] = AggregatorV3Interface(aggregator);
+        emit StableAggregatorUpdated(stable, aggregator);
     }
 
     /**
@@ -33,6 +34,7 @@ contract PriceFeeds is IPriceFeeds, Ownable {
      */
     function setOutdatedLimit(uint limitInHours) external onlyOwner {
         outdatedLimit = 1 hours * limitInHours;
+        emit OutdatedLimitUpdated(outdatedLimit);
     }
 
     /**
