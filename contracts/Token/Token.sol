@@ -4,7 +4,7 @@ pragma solidity ^0.8.11;
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
 contract Token is ERC20 {
-    uint8 private _decimals;
+    uint8 private immutable _decimals;
 
     constructor(
         string memory name_,
