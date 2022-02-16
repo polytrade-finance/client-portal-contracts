@@ -35,6 +35,11 @@ contract Offers is IOffer, Ownable {
         address priceFeedAddress,
         address treasuryAddress
     ) {
+        require(
+            pricingTableAddress != address(0) &&
+                priceFeedAddress != address(0) &&
+                treasuryAddress != address(0)
+        );
         pricingTable = IPricingTable(pricingTableAddress);
         priceFeed = IPriceFeeds(priceFeedAddress);
         treasury = treasuryAddress;
