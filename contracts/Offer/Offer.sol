@@ -18,7 +18,7 @@ contract Offers is IOffer, Ownable {
     IPriceFeeds public priceFeed;
 
     uint private _countId;
-    uint16 private _precision = 1E4;
+    uint16 private constant _precision = 1E4;
     bool public toggleOracle;
 
     uint public totalAdvanced;
