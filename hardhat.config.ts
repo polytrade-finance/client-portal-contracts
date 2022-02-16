@@ -55,9 +55,8 @@ const config: HardhatUserConfig = {
     polygon: {
       url: process.env.POLYGON_URL || "",
       accounts:
-          process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
-
   },
   gasReporter: {
     enabled: process.env.REPORT_GAS !== undefined,
