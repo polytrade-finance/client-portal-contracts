@@ -291,12 +291,24 @@ contract Offers is IOffer, Ownable {
 
         uint amount = offers[offerId].refunded.netAmount * (10**(decimals - 2));
 
-        totalRefunded += amount;
-        stable.safeTransferFrom(
-            stableToPool[address(stable)],
-            treasury,
-            amount
-        );
+        if (toggleOracle) {
+            uint amountToTransfer = (amount *
+                (10**priceFeed.getDecimals(address(stable)))) /
+                (priceFeed.getPrice(address(stable)));
+            totalRefunded += amountToTransfer;
+            stable.safeTransferFrom(
+                stableToPool[address(stable)],
+                treasury,
+                amountToTransfer
+            );
+        } else {
+            totalRefunded += amount;
+            stable.safeTransferFrom(
+                stableToPool[address(stable)],
+                treasury,
+                amount
+            );
+        }
 
         emit ReserveRefunded(offerId, amount);
     }
