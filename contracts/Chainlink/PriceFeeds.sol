@@ -5,8 +5,6 @@ import "./IPriceFeeds.sol";
 import "./AggregatorV3Interface.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "hardhat/console.sol";
-
 /// @title PriceFeeds
 /// @author Polytrade
 contract PriceFeeds is IPriceFeeds, Ownable {
