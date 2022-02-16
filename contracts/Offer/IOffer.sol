@@ -98,11 +98,11 @@ interface IOffer {
     );
 
     /**
-     * @dev Emitted when LenderPool Address is updated
+     * @dev Emitted when stableAddress is mapped to LenderPool
      */
-    event NewLenderPoolAddress(
-        address oldLenderPoolAddress,
-        address newLenderPoolAddress
+    event StableMappedToLenderPool(
+        address stableAddress,
+        address lenderPoolAddress
     );
 
     /**
