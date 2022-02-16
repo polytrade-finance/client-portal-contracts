@@ -46,6 +46,7 @@ contract PriceFeeds is IPriceFeeds, Ownable {
     function getPrice(address stableAddress) public view returns (uint) {
         (, int price, , uint timestamp, ) = stableAggregators[stableAddress]
             .latestRoundData();
+        require(price > 0, "Price is invalid");
         require(
             block.timestamp - timestamp <= outdatedLimit,
             "Outdated pricing feed"
