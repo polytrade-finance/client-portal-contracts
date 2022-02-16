@@ -27,4 +27,17 @@ interface IPriceFeeds {
      * @return decimals of the USD
      */
     function getDecimals(address stableAddress) external view returns (uint);
+
+    /**
+     * @dev Emitted when StableAggregators are updated
+     */
+    event StableAggregatorUpdated(
+        address stableAddress,
+        address aggregatorAddress
+    );
+
+    /**
+     * @dev Emitted when OutdatedLimit is updated
+     */
+    event OutdatedLimitUpdated(uint newOutdatedLimit);
 }
