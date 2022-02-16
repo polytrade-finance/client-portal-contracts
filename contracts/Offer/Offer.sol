@@ -25,7 +25,6 @@ contract Offers is IOffer, Ownable {
     uint public totalRefunded;
 
     address public treasury;
-    address public lenderPool;
 
     mapping(uint => uint16) private _offerToPricingId;
     mapping(uint => OfferItem) public offers;
