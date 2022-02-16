@@ -99,7 +99,7 @@ contract Offers is IOffer, Ownable {
     ) external onlyOwner {
         require(stableAddress != address(0) && lenderPoolAddress != address(0));
         stableToPool[stableAddress] = lenderPoolAddress;
-        emit NewLenderPoolAddress(stableAddress, lenderPoolAddress);
+        emit StableMappedToLenderPool(stableAddress, lenderPoolAddress);
     }
 
     /**
