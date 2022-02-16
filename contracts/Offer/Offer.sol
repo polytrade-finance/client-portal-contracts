@@ -355,7 +355,7 @@ contract Offers is IOffer, Ownable {
      */
     function _calculateAdvancedAmount(uint availableAmount, uint16 advanceFee)
         private
-        view
+        pure
         returns (uint)
     {
         return (availableAmount * advanceFee) / _precision;
@@ -370,7 +370,7 @@ contract Offers is IOffer, Ownable {
      */
     function _calculateFactoringAmount(uint invoiceAmount, uint16 factoringFee)
         private
-        view
+        pure
         returns (uint)
     {
         return (invoiceAmount * factoringFee) / _precision;
@@ -388,8 +388,8 @@ contract Offers is IOffer, Ownable {
         uint advancedAmount,
         uint16 discountFee,
         uint16 tenure
-    ) private view returns (uint) {
-        return (((advancedAmount * discountFee) / 365) * tenure) / _precision;
+    ) private pure returns (uint) {
+        return (((advancedAmount * discountFee)) * tenure) / 365 / _precision;
     }
 
     /**
@@ -404,7 +404,7 @@ contract Offers is IOffer, Ownable {
         uint advancedAmount,
         uint16 lateFee,
         uint24 lateDays
-    ) private view returns (uint) {
+    ) private pure returns (uint) {
         return (((lateFee * advancedAmount) / 365) * lateDays) / _precision;
     }
 
