@@ -261,7 +261,7 @@ describe("PricingTable", function () {
     const date = Math.floor(Date.now() / 1000);
     await offers.reserveRefund(1, date + 60 * 60, 2);
     expect(await usdcContract.balanceOf(treasury)).to.equal(
-      parseUnits("89.81991674", decimals)
+      parseUnits("89.81076745", decimals)
     );
   });
 
@@ -306,7 +306,7 @@ describe("PricingTable", function () {
     expect(offer.refunded.netAmount).to.equal("885167");
 
     expect(await usdcContract.balanceOf(treasury)).to.equal(
-      parseUnits("8851.67", decimals)
+      parseUnits("8850.76014185", decimals)
     );
   });
 
@@ -351,7 +351,7 @@ describe("PricingTable", function () {
     expect(offer.refunded.netAmount).to.equal("1233600");
 
     expect(await usdcContract.balanceOf(treasury)).to.equal(
-      parseUnits("12336.0", decimals)
+      parseUnits("12334.73198955", decimals)
     );
   });
 
@@ -396,7 +396,7 @@ describe("PricingTable", function () {
     expect(offer.refunded.netAmount).to.equal("2375400");
 
     expect(await usdcContract.balanceOf(treasury)).to.equal(
-      parseUnits("23754.0", decimals)
+      parseUnits("23751.55833980", decimals)
     );
   });
 
@@ -460,7 +460,7 @@ describe("PricingTable", function () {
     expect(offer.refunded.netAmount).to.equal("248785");
 
     expect(await usdcContract.balanceOf(treasury)).to.equal(
-      parseUnits("2487.85", decimals)
+      parseUnits("2487.59427530", decimals)
     );
   });
 
@@ -504,7 +504,7 @@ describe("PricingTable", function () {
     expect(offer.refunded.netAmount).to.equal("157022");
 
     expect(await usdcContract.balanceOf(treasury)).to.equal(
-      parseUnits("1570.22", decimals)
+      parseUnits("1570.05859797", decimals)
     );
   });
 
@@ -565,7 +565,7 @@ describe("PricingTable", function () {
     expect(offer.refunded.netAmount).to.equal("165041");
 
     expect(await usdcContract.balanceOf(treasury)).to.equal(
-      parseUnits("1650.41", decimals)
+      parseUnits("1650.24035529", decimals)
     );
   });
 
