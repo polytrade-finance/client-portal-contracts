@@ -256,10 +256,7 @@ contract Offers is IOffer, Ownable {
         refunded.dueDate = dueDate;
 
         uint lateAmount = 0;
-        if (
-            block.timestamp > (dueDate + offer.params.gracePeriod) &&
-            block.timestamp - dueDate > offer.params.gracePeriod
-        ) {
+        if (block.timestamp > (dueDate + offer.params.gracePeriod)) {
             refunded.numberOfLateDays = _calculateLateDays(
                 dueDate,
                 offer.params.gracePeriod
