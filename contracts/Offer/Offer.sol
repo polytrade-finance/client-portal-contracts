@@ -16,7 +16,7 @@ contract Offers is IOffer, Ownable {
     IPricingTable public pricingTable;
 
     uint private _countId;
-    uint16 private constant _precision = 1E4;
+    uint16 private constant _PRECISION = 1E4;
 
     uint public totalAdvanced;
     uint public totalRefunded;
