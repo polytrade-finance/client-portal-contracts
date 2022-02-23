@@ -318,7 +318,7 @@ contract Offers is IOffer, Ownable {
         pure
         returns (uint)
     {
-        return (availableAmount * advanceFee) / _precision;
+        return (availableAmount * advanceFee) / _PRECISION;
     }
 
     /**
@@ -333,7 +333,7 @@ contract Offers is IOffer, Ownable {
         pure
         returns (uint)
     {
-        return (invoiceAmount * factoringFee) / _precision;
+        return (invoiceAmount * factoringFee) / _PRECISION;
     }
 
     /**
@@ -349,7 +349,7 @@ contract Offers is IOffer, Ownable {
         uint16 discountFee,
         uint16 tenure
     ) private pure returns (uint) {
-        return (((advancedAmount * discountFee)) * tenure) / 365 / _precision;
+        return (((advancedAmount * discountFee)) * tenure) / 365 / _PRECISION;
     }
 
     /**
@@ -365,7 +365,7 @@ contract Offers is IOffer, Ownable {
         uint16 lateFee,
         uint24 lateDays
     ) private pure returns (uint) {
-        return (((lateFee * advancedAmount) / 365) * lateDays) / _precision;
+        return (((lateFee * advancedAmount) / 365) * lateDays) / _PRECISION;
     }
 
     /**
