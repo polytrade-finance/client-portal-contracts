@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.11;
+pragma solidity ^0.8.12;
 
 /// Tenure is not within minimum and maximum authorized
 /// @param tenure, actual tenure
@@ -82,14 +82,6 @@ interface IOffer {
     );
 
     /**
-     * @dev Emitted when PriceFeed Address is updated
-     */
-    event NewPriceFeedContract(
-        address oldPriceFeedAddress,
-        address newPriceFeedAddress
-    );
-
-    /**
      * @dev Emitted when Treasury Address is updated
      */
     event NewTreasuryAddress(
@@ -104,9 +96,4 @@ interface IOffer {
         address stableAddress,
         address lenderPoolAddress
     );
-
-    /**
-     * @dev Emitted when Oracle usage is activated or deactivated
-     */
-    event OracleUsageUpdated(bool status);
 }
