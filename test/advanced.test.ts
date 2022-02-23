@@ -1,14 +1,13 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Offers, PriceFeeds, PricingTable, Token } from "../typechain";
+import { Offers, PricingTable, Token } from "../typechain";
 import { getTimestamp, increaseTime, ONE_DAY } from "./helpers";
 import { parseUnits } from "ethers/lib/utils";
 import { constants } from "ethers";
 
 describe("PricingTable", function () {
   let pricingTable: PricingTable;
-  let priceFeed: PriceFeeds;
   let offers: Offers;
   let usdcContract: Token;
   let decimals: number;
@@ -196,29 +195,15 @@ describe("PricingTable", function () {
       await usdcContract.deployed();
     });
 
-    it("Should create PriceFeeds contract", async () => {
-      const PriceFeed = await ethers.getContractFactory("PriceFeeds");
-      priceFeed = await PriceFeed.deploy({});
-      await priceFeed.deployed();
-      await priceFeed.setStableAggregator(
-        usdcContract.address,
-        "0xfE4A8cc5b5B2366C1B58Bea3858e81843581b2F7"
-      );
-    });
-
-    it("Should revert if outdated pricing feed", async () => {
-      await expect(priceFeed.getPrice(usdcContract.address)).to.be.revertedWith(
-        "Outdated pricing feed"
-      );
+    it("Should fail deploying Offer Contract", async () => {
+      const Offers = await ethers.getContractFactory("Offers");
+      await expect(Offers.deploy(ethers.constants.AddressZero, treasury)).to.be
+        .reverted;
     });
 
     it("Should deploy Offer Contract", async () => {
       const Offers = await ethers.getContractFactory("Offers");
-      offers = await Offers.deploy(
-        pricingTable.address,
-        priceFeed.address,
-        treasury
-      );
+      offers = await Offers.deploy(pricingTable.address, treasury);
       await offers.deployed();
     });
 
@@ -249,25 +234,6 @@ describe("PricingTable", function () {
     it("Should set pricingTable to previous PricingTable", async () => {
       await offers.setPricingTableAddress(pricingTable.address);
       expect(await offers.pricingTable()).to.equal(pricingTable.address);
-    });
-
-    it("Should set priceFeed to address(0)", async () => {
-      await expect(offers.setPriceFeedAddress(constants.AddressZero)).to.be
-        .reverted;
-    });
-
-    it("Should set priceFeed to address(1)", async () => {
-      await offers.setPriceFeedAddress(
-        "0x0000000000000000000000000000000000000001"
-      );
-      expect(await offers.priceFeed()).to.equal(
-        "0x0000000000000000000000000000000000000001"
-      );
-    });
-
-    it("Should set priceFeed to previous priceFeed", async () => {
-      await offers.setPriceFeedAddress(priceFeed.address);
-      expect(await offers.priceFeed()).to.equal(priceFeed.address);
     });
 
     it("Should set treasury to address(0)", async () => {
