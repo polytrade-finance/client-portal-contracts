@@ -35,7 +35,7 @@ describe("PricingTable", function () {
   });
 
   describe("Advanced Test", () => {
-    it("Should return the new PrincingTable once deployed", async function () {
+    it("Should return the new PricingTable once deployed", async function () {
       const PricingTable = await ethers.getContractFactory("PricingTable");
       pricingTable = await PricingTable.deploy();
       await pricingTable.deployed();
