@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.11;
+pragma solidity ^0.8.15;
 
 import "./IOffer.sol";
-import "../Chainlink/IPriceFeeds.sol";
 import "../PricingTable/IPricingTable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -15,38 +14,25 @@ contract Offers is IOffer, Ownable {
     using SafeERC20 for IERC20;
 
     IPricingTable public pricingTable;
-    IPriceFeeds public priceFeed;
 
     uint private _countId;
-    uint16 private _precision = 1E4;
-    bool public toggleOracle;
+    uint16 private constant _PRECISION = 1E4;
 
     uint public totalAdvanced;
     uint public totalRefunded;
 
     address public treasury;
-    address public lenderPool;
 
     mapping(uint => uint16) private _offerToPricingId;
     mapping(uint => OfferItem) public offers;
     mapping(address => address) public stableToPool;
 
-    constructor(
-        address pricingTableAddress,
-        address priceFeedAddress,
-        address treasuryAddress
-    ) {
+    constructor(address pricingTableAddress, address treasuryAddress) {
+        require(
+            pricingTableAddress != address(0) && treasuryAddress != address(0)
+        );
         pricingTable = IPricingTable(pricingTableAddress);
-        priceFeed = IPriceFeeds(priceFeedAddress);
         treasury = treasuryAddress;
-    }
-
-    /**
-     * @dev Activate/De-activate usage of the Oracle
-     */
-    function useOracle(bool status) external onlyOwner {
-        toggleOracle = status;
-        emit OracleUsageUpdated(status);
     }
 
     /**
@@ -61,17 +47,6 @@ contract Offers is IOffer, Ownable {
         address oldPricingTable = address(pricingTable);
         pricingTable = IPricingTable(_newPricingTable);
         emit NewPricingTableContract(oldPricingTable, _newPricingTable);
-    }
-
-    /**
-     * @dev Set PriceFeed linked to the contract to a new PriceFeed (`priceFeed`)
-     * Can only be called by the owner
-     */
-    function setPriceFeedAddress(address _newPriceFeed) external onlyOwner {
-        require(_newPriceFeed != address(0));
-        address oldPriceFeed = address(priceFeed);
-        priceFeed = IPriceFeeds(_newPriceFeed);
-        emit NewPriceFeedContract(oldPriceFeed, _newPriceFeed);
     }
 
     /**
@@ -95,7 +70,7 @@ contract Offers is IOffer, Ownable {
     ) external onlyOwner {
         require(stableAddress != address(0) && lenderPoolAddress != address(0));
         stableToPool[stableAddress] = lenderPoolAddress;
-        emit NewLenderPoolAddress(stableAddress, lenderPoolAddress);
+        emit StableMappedToLenderPool(stableAddress, lenderPoolAddress);
     }
 
     /**
@@ -202,24 +177,12 @@ contract Offers is IOffer, Ownable {
 
         uint amount = offers[_countId].advancedAmount * (10**(decimals - 2));
 
-        if (toggleOracle) {
-            uint amountToTransfer = (amount *
-                (10**priceFeed.getDecimals(address(stable)))) /
-                (priceFeed.getPrice(address(stable)));
-            totalAdvanced += amountToTransfer;
-            stable.safeTransferFrom(
-                stableToPool[address(stable)],
-                treasury,
-                amountToTransfer
-            );
-        } else {
-            totalAdvanced += amount;
-            stable.safeTransferFrom(
-                stableToPool[address(stable)],
-                treasury,
-                amount
-            );
-        }
+        totalAdvanced += amount;
+        stable.safeTransferFrom(
+            stableToPool[address(stable)],
+            treasury,
+            amount
+        );
 
         emit OfferCreated(_countId, pricingId);
         return _countId;
@@ -252,10 +215,7 @@ contract Offers is IOffer, Ownable {
         refunded.dueDate = dueDate;
 
         uint lateAmount = 0;
-        if (
-            block.timestamp > (dueDate + offer.params.gracePeriod) &&
-            block.timestamp - dueDate > offer.params.gracePeriod
-        ) {
+        if (block.timestamp > (dueDate + offer.params.gracePeriod)) {
             refunded.numberOfLateDays = _calculateLateDays(
                 dueDate,
                 offer.params.gracePeriod
@@ -355,10 +315,10 @@ contract Offers is IOffer, Ownable {
      */
     function _calculateAdvancedAmount(uint availableAmount, uint16 advanceFee)
         private
-        view
+        pure
         returns (uint)
     {
-        return (availableAmount * advanceFee) / _precision;
+        return (availableAmount * advanceFee) / _PRECISION;
     }
 
     /**
@@ -370,10 +330,10 @@ contract Offers is IOffer, Ownable {
      */
     function _calculateFactoringAmount(uint invoiceAmount, uint16 factoringFee)
         private
-        view
+        pure
         returns (uint)
     {
-        return (invoiceAmount * factoringFee) / _precision;
+        return (invoiceAmount * factoringFee) / _PRECISION;
     }
 
     /**
@@ -388,8 +348,8 @@ contract Offers is IOffer, Ownable {
         uint advancedAmount,
         uint16 discountFee,
         uint16 tenure
-    ) private view returns (uint) {
-        return (((advancedAmount * discountFee) / 365) * tenure) / _precision;
+    ) private pure returns (uint) {
+        return (((advancedAmount * discountFee)) * tenure) / 365 / _PRECISION;
     }
 
     /**
@@ -404,8 +364,8 @@ contract Offers is IOffer, Ownable {
         uint advancedAmount,
         uint16 lateFee,
         uint24 lateDays
-    ) private view returns (uint) {
-        return (((lateFee * advancedAmount) / 365) * lateDays) / _precision;
+    ) private pure returns (uint) {
+        return (((lateFee * advancedAmount) / 365) * lateDays) / _PRECISION;
     }
 
     /**
