@@ -90,6 +90,14 @@ interface IOffer {
     );
 
     /**
+     * @dev Emitted when Treasury Manager is updated
+     */
+    event NewTreasuryManager(
+        address oldTreasuryManager,
+        address newTreasuryManager
+    );
+
+    /**
      * @dev Emitted when stableAddress is mapped to LenderPool
      */
     event StableMappedToLenderPool(
