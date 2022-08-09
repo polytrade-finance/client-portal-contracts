@@ -88,8 +88,4 @@ interface IPricingTable {
      * @return returns boolean if pricing is valid or not
      */
     function isPricingItemValid(uint16 id) external view returns (bool);
-
-    event NewPricingItem(uint16 id, PricingItem pricingItem);
-    event UpdatedPricingItem(uint16 id, PricingItem pricingItem);
-    event RemovedPricingItem(uint16 id);
 }
