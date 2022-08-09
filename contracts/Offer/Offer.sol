@@ -194,6 +194,9 @@ contract Offers is IOffer, Ownable {
         uint amount = offers[_countId].advancedAmount * (10**(decimals - 2));
 
         totalAdvanced += amount;
+
+        ILenderPool(stableToPool[address(stable)]).requestFundInvoice(amount);
+
         stable.safeTransferFrom(
             stableToPool[address(stable)],
             treasury,
@@ -267,6 +270,9 @@ contract Offers is IOffer, Ownable {
         uint amount = offers[offerId].refunded.netAmount * (10**(decimals - 2));
 
         totalRefunded += amount;
+
+        ILenderPool(stableToPool[address(stable)]).requestFundInvoice(amount);
+
         stable.safeTransferFrom(
             stableToPool[address(stable)],
             treasury,
