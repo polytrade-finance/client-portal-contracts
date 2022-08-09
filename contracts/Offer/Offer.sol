@@ -2,6 +2,7 @@
 pragma solidity ^0.8.15;
 
 import "./IOffer.sol";
+import "../ILenderPool.sol";
 import "../PricingTable/IPricingTable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
