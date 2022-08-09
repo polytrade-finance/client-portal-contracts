@@ -14,6 +14,10 @@ interface IPricingTable {
         uint maxAmount;
     }
 
+    event NewPricingItem(uint16 id, PricingItem pricingItem);
+    event UpdatedPricingItem(uint16 id, PricingItem pricingItem);
+    event RemovedPricingItem(uint16 id);
+
     /**
      * @notice Add a Pricing Item to the Pricing Table
      * @dev Only Owner is authorized to add a Pricing Item
