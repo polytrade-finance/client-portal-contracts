@@ -1,7 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Offers, PricingTable, Token } from "../typechain";
+import { LenderPool, Offers, PricingTable, Token } from "../typechain";
 import { getTimestamp, increaseTime, ONE_DAY } from "./helpers";
 import { parseUnits } from "ethers/lib/utils";
 import { constants } from "ethers";
@@ -15,13 +15,12 @@ describe("PricingTable", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
   let treasury: string;
-  let lenderPool: string;
+  let lenderPool: LenderPool;
 
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
     treasury = addresses[2];
-    lenderPool = addresses[8];
     decimals = 8;
   });
 
@@ -207,13 +206,25 @@ describe("PricingTable", function () {
       await offers.deployed();
     });
 
+    it("Should deploy LenderPool Mock", async () => {
+      const LenderPool = await ethers.getContractFactory("LenderPool");
+      lenderPool = await LenderPool.deploy(
+        usdcContract.address,
+        offers.address
+      );
+      await lenderPool.deployed();
+    });
+
     it("Should set stable to lender address", async () => {
-      await offers.setLenderPoolAddress(usdcContract.address, lenderPool);
+      await offers.setLenderPoolAddress(
+        usdcContract.address,
+        lenderPool.address
+      );
     });
 
     it("Should fail set stable to lender address", async () => {
       await expect(
-        offers.setLenderPoolAddress(constants.AddressZero, lenderPool)
+        offers.setLenderPoolAddress(constants.AddressZero, lenderPool.address)
       ).to.be.reverted;
     });
 
@@ -256,8 +267,11 @@ describe("PricingTable", function () {
     });
 
     it("Should send 100,000,000 USDT to Offer Contract", async () => {
-      await usdcContract.transfer(lenderPool, parseUnits("1000000", decimals));
-      expect(await usdcContract.balanceOf(lenderPool)).to.equal(
+      await usdcContract.transfer(
+        lenderPool.address,
+        parseUnits("1000000", decimals)
+      );
+      expect(await usdcContract.balanceOf(lenderPool.address)).to.equal(
         parseUnits("1000000", decimals)
       );
 
@@ -292,6 +306,13 @@ describe("PricingTable", function () {
           addresses[1]
         )
       ).to.be.revertedWith("Stable Address not whitelisted");
+    });
+
+    it("Should add set stable to lenderpool", async () => {
+      await offers.setLenderPoolAddress(
+        usdcContract.address,
+        lenderPool.address
+      );
     });
 
     it("Should create first offer", async () => {
@@ -708,6 +729,20 @@ describe("PricingTable", function () {
           usdcContract.address
         )
       ).to.be.revertedWith("InvalidAvailableAmount(1000000, 900000)");
+    });
+
+    it("Should change TreasuryManager", async () => {
+      await offers.setTreasuryManager(addresses[10]);
+    });
+
+    it("Should fail changing TreasuryAddress", async () => {
+      await expect(offers.setTreasuryAddress(addresses[10])).to.be.revertedWith(
+        "Not treasuryManager"
+      );
+    });
+
+    it("Should change TreasuryManager", async () => {
+      await offers.connect(accounts[10]).setTreasuryManager(addresses[1]);
     });
   });
 });

@@ -2,6 +2,7 @@
 pragma solidity ^0.8.15;
 
 import "./IOffer.sol";
+import "../ILenderPool.sol";
 import "../PricingTable/IPricingTable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -22,6 +23,7 @@ contract Offers is IOffer, Ownable {
     uint public totalRefunded;
 
     address public treasury;
+    address public treasuryManager;
 
     mapping(uint => uint16) private _offerToPricingId;
     mapping(uint => OfferItem) public offers;
@@ -33,6 +35,7 @@ contract Offers is IOffer, Ownable {
         );
         pricingTable = IPricingTable(pricingTableAddress);
         treasury = treasuryAddress;
+        treasuryManager = _msgSender();
     }
 
     /**
@@ -53,11 +56,24 @@ contract Offers is IOffer, Ownable {
      * @dev Set TreasuryAddress linked to the contract to a new treasuryAddress
      * Can only be called by the owner
      */
-    function setTreasuryAddress(address _newTreasury) external onlyOwner {
+    function setTreasuryAddress(address _newTreasury) external {
+        require(_msgSender() == treasuryManager, "Not treasuryManager");
         require(_newTreasury != address(0));
         address oldTreasury = treasury;
         treasury = _newTreasury;
         emit NewTreasuryAddress(oldTreasury, _newTreasury);
+    }
+
+    /**
+     * @dev Set TreasuryManager linked to the contract to a new treasuryManager
+     * Can only be called by the owner
+     */
+    function setTreasuryManager(address _newTreasuryManager) external {
+        require(_msgSender() == treasuryManager, "Not treasuryManager");
+        require(_newTreasuryManager != address(0));
+        address oldTreasuryManager = treasury;
+        treasuryManager = _newTreasuryManager;
+        emit NewTreasuryManager(oldTreasuryManager, _newTreasuryManager);
     }
 
     /**
@@ -178,6 +194,9 @@ contract Offers is IOffer, Ownable {
         uint amount = offers[_countId].advancedAmount * (10**(decimals - 2));
 
         totalAdvanced += amount;
+
+        ILenderPool(stableToPool[address(stable)]).requestFundInvoice(amount);
+
         stable.safeTransferFrom(
             stableToPool[address(stable)],
             treasury,
@@ -251,6 +270,9 @@ contract Offers is IOffer, Ownable {
         uint amount = offers[offerId].refunded.netAmount * (10**(decimals - 2));
 
         totalRefunded += amount;
+
+        ILenderPool(stableToPool[address(stable)]).requestFundInvoice(amount);
+
         stable.safeTransferFrom(
             stableToPool[address(stable)],
             treasury,
@@ -304,6 +326,21 @@ contract Offers is IOffer, Ownable {
         if (invoiceAmount < availableAmount)
             revert InvalidAvailableAmount(availableAmount, invoiceAmount);
         return true;
+    }
+
+    /**
+     * @notice calculate the number of Late Days (Now - dueDate - gracePeriod)
+     * @dev calculate based on `(block.timestamp - dueDate - gracePeriod) / 1 days` formula
+     * @param dueDate, due date -> epoch timestamps format
+     * @param gracePeriod, grace period -> expressed in seconds
+     * @return uint24, number of late Days
+     */
+    function _calculateLateDays(uint dueDate, uint gracePeriod)
+        private
+        view
+        returns (uint24)
+    {
+        return uint24(block.timestamp - dueDate - gracePeriod) / 1 days;
     }
 
     /**
@@ -366,20 +403,5 @@ contract Offers is IOffer, Ownable {
         uint24 lateDays
     ) private pure returns (uint) {
         return (((lateFee * advancedAmount) / 365) * lateDays) / _PRECISION;
-    }
-
-    /**
-     * @notice calculate the number of Late Days (Now - dueDate - gracePeriod)
-     * @dev calculate based on `(block.timestamp - dueDate - gracePeriod) / 1 days` formula
-     * @param dueDate, due date -> epoch timestamps format
-     * @param gracePeriod, grace period -> expressed in seconds
-     * @return uint24, number of late Days
-     */
-    function _calculateLateDays(uint dueDate, uint gracePeriod)
-        private
-        view
-        returns (uint24)
-    {
-        return uint24(block.timestamp - dueDate - gracePeriod) / 1 days;
     }
 }
