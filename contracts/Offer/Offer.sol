@@ -23,6 +23,7 @@ contract Offers is IOffer, Ownable {
     uint public totalRefunded;
 
     address public treasury;
+    address public treasuryManager;
 
     mapping(uint => uint16) private _offerToPricingId;
     mapping(uint => OfferItem) public offers;
@@ -34,6 +35,7 @@ contract Offers is IOffer, Ownable {
         );
         pricingTable = IPricingTable(pricingTableAddress);
         treasury = treasuryAddress;
+        treasuryManager = _msgSender();
     }
 
     /**
@@ -54,11 +56,24 @@ contract Offers is IOffer, Ownable {
      * @dev Set TreasuryAddress linked to the contract to a new treasuryAddress
      * Can only be called by the owner
      */
-    function setTreasuryAddress(address _newTreasury) external onlyOwner {
+    function setTreasuryAddress(address _newTreasury) external {
+        require(_msgSender() == treasuryManager, "Not treasuryManager");
         require(_newTreasury != address(0));
         address oldTreasury = treasury;
         treasury = _newTreasury;
         emit NewTreasuryAddress(oldTreasury, _newTreasury);
+    }
+
+    /**
+     * @dev Set TreasuryManager linked to the contract to a new treasuryManager
+     * Can only be called by the owner
+     */
+    function setTreasuryManager(address _newTreasuryManager) external {
+        require(_msgSender() == treasuryManager, "Not treasuryManager");
+        require(_newTreasuryManager != address(0));
+        address oldTreasuryManager = treasury;
+        treasuryManager = _newTreasuryManager;
+        emit NewTreasuryManager(oldTreasuryManager, _newTreasuryManager);
     }
 
     /**
