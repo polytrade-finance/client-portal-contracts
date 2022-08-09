@@ -329,6 +329,21 @@ contract Offers is IOffer, Ownable {
     }
 
     /**
+     * @notice calculate the number of Late Days (Now - dueDate - gracePeriod)
+     * @dev calculate based on `(block.timestamp - dueDate - gracePeriod) / 1 days` formula
+     * @param dueDate, due date -> epoch timestamps format
+     * @param gracePeriod, grace period -> expressed in seconds
+     * @return uint24, number of late Days
+     */
+    function _calculateLateDays(uint dueDate, uint gracePeriod)
+        private
+        view
+        returns (uint24)
+    {
+        return uint24(block.timestamp - dueDate - gracePeriod) / 1 days;
+    }
+
+    /**
      * @notice calculate the advanced Amount (availableAmount * advanceFee)
      * @dev calculate based on `(availableAmount * advanceFee)/ _precision` formula
      * @param availableAmount, amount for the available amount
@@ -388,20 +403,5 @@ contract Offers is IOffer, Ownable {
         uint24 lateDays
     ) private pure returns (uint) {
         return (((lateFee * advancedAmount) / 365) * lateDays) / _PRECISION;
-    }
-
-    /**
-     * @notice calculate the number of Late Days (Now - dueDate - gracePeriod)
-     * @dev calculate based on `(block.timestamp - dueDate - gracePeriod) / 1 days` formula
-     * @param dueDate, due date -> epoch timestamps format
-     * @param gracePeriod, grace period -> expressed in seconds
-     * @return uint24, number of late Days
-     */
-    function _calculateLateDays(uint dueDate, uint gracePeriod)
-        private
-        view
-        returns (uint24)
-    {
-        return uint24(block.timestamp - dueDate - gracePeriod) / 1 days;
     }
 }
