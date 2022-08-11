@@ -741,6 +741,14 @@ describe("PricingTable", function () {
       );
     });
 
+    it("Should fail changing TreasuryManager", async () => {
+      await expect(offers.setTreasuryManager(addresses[10])).to.be.revertedWith(
+          "Not treasuryManager"
+      );
+
+      await expect(offers.setTreasuryManager(constants.AddressZero)).to.be.reverted;
+    });
+
     it("Should change TreasuryManager", async () => {
       await offers.connect(accounts[10]).setTreasuryManager(addresses[1]);
     });
