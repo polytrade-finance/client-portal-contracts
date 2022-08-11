@@ -1,14 +1,13 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { Offers, PriceFeeds, PricingTable, Token } from "../typechain";
+import { LenderPool, Offers, PricingTable, Token } from "../typechain";
 import { getTimestamp, increaseTime, ONE_DAY } from "./helpers";
 import { parseUnits } from "ethers/lib/utils";
 import { constants } from "ethers";
 
 describe("PricingTable", function () {
   let pricingTable: PricingTable;
-  let priceFeed: PriceFeeds;
   let offers: Offers;
   let usdcContract: Token;
   let decimals: number;
@@ -16,13 +15,12 @@ describe("PricingTable", function () {
   let accounts: SignerWithAddress[];
   let addresses: string[];
   let treasury: string;
-  let lenderPool: string;
+  let lenderPool: LenderPool;
 
   before(async () => {
     accounts = await ethers.getSigners();
     addresses = accounts.map((account: SignerWithAddress) => account.address);
     treasury = addresses[2];
-    lenderPool = addresses[8];
     decimals = 8;
   });
 
@@ -36,7 +34,7 @@ describe("PricingTable", function () {
   });
 
   describe("Advanced Test", () => {
-    it("Should return the new PrincingTable once deployed", async function () {
+    it("Should return the new PricingTable once deployed", async function () {
       const PricingTable = await ethers.getContractFactory("PricingTable");
       pricingTable = await PricingTable.deploy();
       await pricingTable.deployed();
@@ -196,39 +194,37 @@ describe("PricingTable", function () {
       await usdcContract.deployed();
     });
 
-    it("Should create PriceFeeds contract", async () => {
-      const PriceFeed = await ethers.getContractFactory("PriceFeeds");
-      priceFeed = await PriceFeed.deploy({});
-      await priceFeed.deployed();
-      await priceFeed.setStableAggregator(
-        usdcContract.address,
-        "0xfE4A8cc5b5B2366C1B58Bea3858e81843581b2F7"
-      );
-    });
-
-    it("Should revert if outdated pricing feed", async () => {
-      await expect(priceFeed.getPrice(usdcContract.address)).to.be.revertedWith(
-        "Outdated pricing feed"
-      );
+    it("Should fail deploying Offer Contract", async () => {
+      const Offers = await ethers.getContractFactory("Offers");
+      await expect(Offers.deploy(ethers.constants.AddressZero, treasury)).to.be
+        .reverted;
     });
 
     it("Should deploy Offer Contract", async () => {
       const Offers = await ethers.getContractFactory("Offers");
-      offers = await Offers.deploy(
-        pricingTable.address,
-        priceFeed.address,
-        treasury
-      );
+      offers = await Offers.deploy(pricingTable.address, treasury);
       await offers.deployed();
     });
 
+    it("Should deploy LenderPool Mock", async () => {
+      const LenderPool = await ethers.getContractFactory("LenderPool");
+      lenderPool = await LenderPool.deploy(
+        usdcContract.address,
+        offers.address
+      );
+      await lenderPool.deployed();
+    });
+
     it("Should set stable to lender address", async () => {
-      await offers.setLenderPoolAddress(usdcContract.address, lenderPool);
+      await offers.setLenderPoolAddress(
+        usdcContract.address,
+        lenderPool.address
+      );
     });
 
     it("Should fail set stable to lender address", async () => {
       await expect(
-        offers.setLenderPoolAddress(constants.AddressZero, lenderPool)
+        offers.setLenderPoolAddress(constants.AddressZero, lenderPool.address)
       ).to.be.reverted;
     });
 
@@ -251,25 +247,6 @@ describe("PricingTable", function () {
       expect(await offers.pricingTable()).to.equal(pricingTable.address);
     });
 
-    it("Should set priceFeed to address(0)", async () => {
-      await expect(offers.setPriceFeedAddress(constants.AddressZero)).to.be
-        .reverted;
-    });
-
-    it("Should set priceFeed to address(1)", async () => {
-      await offers.setPriceFeedAddress(
-        "0x0000000000000000000000000000000000000001"
-      );
-      expect(await offers.priceFeed()).to.equal(
-        "0x0000000000000000000000000000000000000001"
-      );
-    });
-
-    it("Should set priceFeed to previous priceFeed", async () => {
-      await offers.setPriceFeedAddress(priceFeed.address);
-      expect(await offers.priceFeed()).to.equal(priceFeed.address);
-    });
-
     it("Should set treasury to address(0)", async () => {
       await expect(offers.setTreasuryAddress(constants.AddressZero)).to.be
         .reverted;
@@ -290,8 +267,11 @@ describe("PricingTable", function () {
     });
 
     it("Should send 100,000,000 USDT to Offer Contract", async () => {
-      await usdcContract.transfer(lenderPool, parseUnits("1000000", decimals));
-      expect(await usdcContract.balanceOf(lenderPool)).to.equal(
+      await usdcContract.transfer(
+        lenderPool.address,
+        parseUnits("1000000", decimals)
+      );
+      expect(await usdcContract.balanceOf(lenderPool.address)).to.equal(
         parseUnits("1000000", decimals)
       );
 
@@ -326,6 +306,13 @@ describe("PricingTable", function () {
           addresses[1]
         )
       ).to.be.revertedWith("Stable Address not whitelisted");
+    });
+
+    it("Should add set stable to lenderpool", async () => {
+      await offers.setLenderPoolAddress(
+        usdcContract.address,
+        lenderPool.address
+      );
     });
 
     it("Should create first offer", async () => {
@@ -742,6 +729,29 @@ describe("PricingTable", function () {
           usdcContract.address
         )
       ).to.be.revertedWith("InvalidAvailableAmount(1000000, 900000)");
+    });
+
+    it("Should change TreasuryManager", async () => {
+      await offers.setTreasuryManager(addresses[10]);
+    });
+
+    it("Should fail changing TreasuryAddress", async () => {
+      await expect(offers.setTreasuryAddress(addresses[10])).to.be.revertedWith(
+        "Not treasuryManager"
+      );
+    });
+
+    it("Should fail changing TreasuryManager", async () => {
+      await expect(offers.setTreasuryManager(addresses[10])).to.be.revertedWith(
+        "Not treasuryManager"
+      );
+
+      await expect(offers.setTreasuryManager(constants.AddressZero)).to.be
+        .reverted;
+    });
+
+    it("Should change TreasuryManager", async () => {
+      await offers.connect(accounts[10]).setTreasuryManager(addresses[1]);
     });
   });
 });

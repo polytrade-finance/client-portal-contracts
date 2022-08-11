@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.11;
+pragma solidity ^0.8.15;
 
 /// @title IPricingTable
 /// @author Polytrade
@@ -13,6 +13,10 @@ interface IPricingTable {
         uint minAmount;
         uint maxAmount;
     }
+
+    event NewPricingItem(uint16 id, PricingItem pricingItem);
+    event UpdatedPricingItem(uint16 id, PricingItem pricingItem);
+    event RemovedPricingItem(uint16 id);
 
     /**
      * @notice Add a Pricing Item to the Pricing Table
@@ -84,8 +88,4 @@ interface IPricingTable {
      * @return returns boolean if pricing is valid or not
      */
     function isPricingItemValid(uint16 id) external view returns (bool);
-
-    event NewPricingItem(uint16 id, PricingItem pricingItem);
-    event UpdatedPricingItem(uint16 id, PricingItem pricingItem);
-    event RemovedPricingItem(uint16 id);
 }
