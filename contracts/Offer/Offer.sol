@@ -124,7 +124,7 @@ contract Offers is IOffer, Ownable {
     /**
      * @notice Create an offer, check if it fits pricingItem requirements and send Advance to treasury
      * @dev calls _checkParams and returns Error if params don't fit with the pricingID
-     * @dev only `Owner` can create a new offer
+     * @dev only the `Owner` can create a new offer
      * @dev emits OfferCreated event
      * @dev send Advance Amount to treasury
      * @param pricingId, Id of the pricing Item
@@ -239,6 +239,7 @@ contract Offers is IOffer, Ownable {
                 dueDate,
                 offer.params.gracePeriod
             );
+
             lateAmount = _calculateLateAmount(
                 offer.advancedAmount,
                 lateFee,
