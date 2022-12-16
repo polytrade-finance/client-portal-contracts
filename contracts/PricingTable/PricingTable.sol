@@ -51,8 +51,8 @@ contract PricingTable is IPricingTable, Ownable {
      * @notice Update an existing Pricing Item
      * @dev Only Owner is authorized to update a Pricing Item
      * @param pricingId, pricingId (hex format)
-     * @param minTenure, minimum tenure expressed in percentage
-     * @param maxTenure, maximum tenure expressed in percentage
+     * @param minTenure, minimum tenure expressed in days
+     * @param maxTenure, maximum tenure expressed in days
      * @param maxAdvancedRatio, maximum advanced ratio expressed in percentage
      * @param minDiscountRange, minimum discount range expressed in percentage
      * @param minFactoringFee, minimum Factoring fee expressed in percentage
