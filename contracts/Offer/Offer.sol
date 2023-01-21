@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.11;
+pragma solidity ^0.8.15;
 
 import "./IOffer.sol";
-import "../Chainlink/IPriceFeeds.sol";
+import "../ILenderPool.sol";
 import "../PricingTable/IPricingTable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
@@ -15,38 +15,27 @@ contract Offers is IOffer, Ownable {
     using SafeERC20 for IERC20;
 
     IPricingTable public pricingTable;
-    IPriceFeeds public priceFeed;
 
     uint private _countId;
-    uint16 private _precision = 1E4;
-    bool public toggleOracle;
+    uint16 private constant _PRECISION = 1E4;
 
     uint public totalAdvanced;
     uint public totalRefunded;
 
     address public treasury;
-    address public lenderPool;
+    address public treasuryManager;
 
     mapping(uint => uint16) private _offerToPricingId;
     mapping(uint => OfferItem) public offers;
     mapping(address => address) public stableToPool;
 
-    constructor(
-        address pricingTableAddress,
-        address priceFeedAddress,
-        address treasuryAddress
-    ) {
+    constructor(address pricingTableAddress, address treasuryAddress) {
+        require(
+            pricingTableAddress != address(0) && treasuryAddress != address(0)
+        );
         pricingTable = IPricingTable(pricingTableAddress);
-        priceFeed = IPriceFeeds(priceFeedAddress);
         treasury = treasuryAddress;
-    }
-
-    /**
-     * @dev Activate/De-activate usage of the Oracle
-     */
-    function useOracle(bool status) external onlyOwner {
-        toggleOracle = status;
-        emit OracleUsageUpdated(status);
+        treasuryManager = _msgSender();
     }
 
     /**
@@ -64,25 +53,27 @@ contract Offers is IOffer, Ownable {
     }
 
     /**
-     * @dev Set PriceFeed linked to the contract to a new PriceFeed (`priceFeed`)
-     * Can only be called by the owner
-     */
-    function setPriceFeedAddress(address _newPriceFeed) external onlyOwner {
-        require(_newPriceFeed != address(0));
-        address oldPriceFeed = address(priceFeed);
-        priceFeed = IPriceFeeds(_newPriceFeed);
-        emit NewPriceFeedContract(oldPriceFeed, _newPriceFeed);
-    }
-
-    /**
      * @dev Set TreasuryAddress linked to the contract to a new treasuryAddress
      * Can only be called by the owner
      */
-    function setTreasuryAddress(address _newTreasury) external onlyOwner {
+    function setTreasuryAddress(address _newTreasury) external {
+        require(_msgSender() == treasuryManager, "Not treasuryManager");
         require(_newTreasury != address(0));
         address oldTreasury = treasury;
         treasury = _newTreasury;
         emit NewTreasuryAddress(oldTreasury, _newTreasury);
+    }
+
+    /**
+     * @dev Set TreasuryManager linked to the contract to a new treasuryManager
+     * Can only be called by the owner
+     */
+    function setTreasuryManager(address _newTreasuryManager) external {
+        require(_msgSender() == treasuryManager, "Not treasuryManager");
+        require(_newTreasuryManager != address(0));
+        address oldTreasuryManager = treasury;
+        treasuryManager = _newTreasuryManager;
+        emit NewTreasuryManager(oldTreasuryManager, _newTreasuryManager);
     }
 
     /**
@@ -95,7 +86,7 @@ contract Offers is IOffer, Ownable {
     ) external onlyOwner {
         require(stableAddress != address(0) && lenderPoolAddress != address(0));
         stableToPool[stableAddress] = lenderPoolAddress;
-        emit NewLenderPoolAddress(stableAddress, lenderPoolAddress);
+        emit StableMappedToLenderPool(stableAddress, lenderPoolAddress);
     }
 
     /**
@@ -133,7 +124,7 @@ contract Offers is IOffer, Ownable {
     /**
      * @notice Create an offer, check if it fits pricingItem requirements and send Advance to treasury
      * @dev calls _checkParams and returns Error if params don't fit with the pricingID
-     * @dev only `Owner` can create a new offer
+     * @dev only the `Owner` can create a new offer
      * @dev emits OfferCreated event
      * @dev send Advance Amount to treasury
      * @param pricingId, Id of the pricing Item
@@ -202,24 +193,15 @@ contract Offers is IOffer, Ownable {
 
         uint amount = offers[_countId].advancedAmount * (10**(decimals - 2));
 
-        if (toggleOracle) {
-            uint amountToTransfer = (amount *
-                (10**priceFeed.getDecimals(address(stable)))) /
-                (priceFeed.getPrice(address(stable)));
-            totalAdvanced += amountToTransfer;
-            stable.safeTransferFrom(
-                stableToPool[address(stable)],
-                treasury,
-                amountToTransfer
-            );
-        } else {
-            totalAdvanced += amount;
-            stable.safeTransferFrom(
-                stableToPool[address(stable)],
-                treasury,
-                amount
-            );
-        }
+        totalAdvanced += amount;
+
+        ILenderPool(stableToPool[address(stable)]).requestFundInvoice(amount);
+
+        stable.safeTransferFrom(
+            stableToPool[address(stable)],
+            treasury,
+            amount
+        );
 
         emit OfferCreated(_countId, pricingId);
         return _countId;
@@ -252,14 +234,12 @@ contract Offers is IOffer, Ownable {
         refunded.dueDate = dueDate;
 
         uint lateAmount = 0;
-        if (
-            block.timestamp > (dueDate + offer.params.gracePeriod) &&
-            block.timestamp - dueDate > offer.params.gracePeriod
-        ) {
+        if (block.timestamp > (dueDate + offer.params.gracePeriod)) {
             refunded.numberOfLateDays = _calculateLateDays(
                 dueDate,
                 offer.params.gracePeriod
             );
+
             lateAmount = _calculateLateAmount(
                 offer.advancedAmount,
                 lateFee,
@@ -291,6 +271,9 @@ contract Offers is IOffer, Ownable {
         uint amount = offers[offerId].refunded.netAmount * (10**(decimals - 2));
 
         totalRefunded += amount;
+
+        ILenderPool(stableToPool[address(stable)]).requestFundInvoice(amount);
+
         stable.safeTransferFrom(
             stableToPool[address(stable)],
             treasury,
@@ -347,6 +330,21 @@ contract Offers is IOffer, Ownable {
     }
 
     /**
+     * @notice calculate the number of Late Days (Now - dueDate - gracePeriod)
+     * @dev calculate based on `(block.timestamp - dueDate - gracePeriod) / 1 days` formula
+     * @param dueDate, due date -> epoch timestamps format
+     * @param gracePeriod, grace period -> expressed in seconds
+     * @return uint24, number of late Days
+     */
+    function _calculateLateDays(uint dueDate, uint gracePeriod)
+        private
+        view
+        returns (uint24)
+    {
+        return uint24(block.timestamp - dueDate - gracePeriod) / 1 days;
+    }
+
+    /**
      * @notice calculate the advanced Amount (availableAmount * advanceFee)
      * @dev calculate based on `(availableAmount * advanceFee)/ _precision` formula
      * @param availableAmount, amount for the available amount
@@ -355,10 +353,10 @@ contract Offers is IOffer, Ownable {
      */
     function _calculateAdvancedAmount(uint availableAmount, uint16 advanceFee)
         private
-        view
+        pure
         returns (uint)
     {
-        return (availableAmount * advanceFee) / _precision;
+        return (availableAmount * advanceFee) / _PRECISION;
     }
 
     /**
@@ -370,10 +368,10 @@ contract Offers is IOffer, Ownable {
      */
     function _calculateFactoringAmount(uint invoiceAmount, uint16 factoringFee)
         private
-        view
+        pure
         returns (uint)
     {
-        return (invoiceAmount * factoringFee) / _precision;
+        return (invoiceAmount * factoringFee) / _PRECISION;
     }
 
     /**
@@ -388,8 +386,8 @@ contract Offers is IOffer, Ownable {
         uint advancedAmount,
         uint16 discountFee,
         uint16 tenure
-    ) private view returns (uint) {
-        return (((advancedAmount * discountFee) / 365) * tenure) / _precision;
+    ) private pure returns (uint) {
+        return (((advancedAmount * discountFee)) * tenure) / 365 / _PRECISION;
     }
 
     /**
@@ -404,22 +402,7 @@ contract Offers is IOffer, Ownable {
         uint advancedAmount,
         uint16 lateFee,
         uint24 lateDays
-    ) private view returns (uint) {
-        return (((lateFee * advancedAmount) / 365) * lateDays) / _precision;
-    }
-
-    /**
-     * @notice calculate the number of Late Days (Now - dueDate - gracePeriod)
-     * @dev calculate based on `(block.timestamp - dueDate - gracePeriod) / 1 days` formula
-     * @param dueDate, due date -> epoch timestamps format
-     * @param gracePeriod, grace period -> expressed in seconds
-     * @return uint24, number of late Days
-     */
-    function _calculateLateDays(uint dueDate, uint gracePeriod)
-        private
-        view
-        returns (uint24)
-    {
-        return uint24(block.timestamp - dueDate - gracePeriod) / 1 days;
+    ) private pure returns (uint) {
+        return (((lateFee * advancedAmount) / 365) * lateDays) / _PRECISION;
     }
 }
