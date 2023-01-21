@@ -1,6 +1,8 @@
-# client-portal-contracts (beta)
-[![Documentation Status](https://readthedocs.org/projects/smart-contracts-for-testing/badge/?version=latest)](https://smart-contracts-for-testing.readthedocs.io/en/latest/?badge=latest)(add link to docs)
 
+
+# Polytrade - Client Portal - Smart contracts - Solidity
+
+[![Documentation Status](https://readthedocs.org/projects/smart-contracts-for-testing/badge/?version=latest)](https://smart-contracts-for-testing.readthedocs.io/en/latest/?badge=latest)(add link to docs)
 ## Introduction
 Client portal contracts are used to make offer against the invoices uploaded on polytrade.finance website. 
 
