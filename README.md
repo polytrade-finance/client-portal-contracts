@@ -1,56 +1,26 @@
+
+
 # Polytrade - Client Portal - Smart contracts - Solidity
 
-## `PricingTable`
+[![Documentation Status](https://readthedocs.org/projects/smart-contracts-for-testing/badge/?version=latest)](https://smart-contracts-for-testing.readthedocs.io/en/latest/?badge=latest)(add link to docs)
+## Introduction
+Client portal contracts are used to make offer against the invoices uploaded on polytrade.finance website. 
 
-#### `addPricingItem(bytes2 pricingId, uint8 minTenure, uint8 maxTenure, uint16 maxAdvancedRatio, uint16 minDiscountRange, uint16 minFactoringFee, uint256 minAmount, uint256 maxAmount)` (external)
+## Table of content
+1. [Project status](#project_status)
+2. [Technologies](#technologies)
+3. [License](#license)
 
-Add a Pricing Item to the Pricing Table
 
-Only Owner is authorized to add a Pricing Item
+<a name = "project_status"></a>
+## 1. Project status
+This smart contract is the first version for client protocol. There are plans to make this project more decentralized.
 
-#### `updatePricingItem(bytes2 pricingId, uint8 minTenure, uint8 maxTenure, uint16 maxAdvancedRatio, uint16 minDiscountRange, uint16 minFactoringFee, uint256 minAmount, uint256 maxAmount, bool status)` (external)
 
-Update an existing Pricing Item
 
-Only Owner is authorized to update a Pricing Item
+<a name="technologies"></a>
+## 2. Technologies
+Hardhat, Ethers, Solidity
 
-#### `removePricingItem(bytes2 id)` (external)
-
-Remove a Pricing Item from the Pricing Table
-
-Only Owner is authorized to add a Pricing Item
-
-#### `getPricingItem(bytes2 id) → struct IPricingTable.PricingItem` (external)
-
-Returns the pricing Item
-
-#### `isPricingItemValid(bytes2 id) → bool` (external)
-
-Returns if the pricing Item is valid
-
-## `Offers`
-
-#### `constructor(address pricingAddress)` (public)
-
-#### `checkOfferValidity(bytes2 pricingId, uint8 tenure, uint16 advanceFee, uint16 discountFee, uint16 factoringFee, uint256 invoiceAmount, uint256 availableAmount) → bool` (external)
-
-check if params fit with the pricingItem
-
-checks every params and returns a custom Error
-
-#### `createOffer(bytes2 pricingId, struct OfferParams params) → uint256` (public)
-
-Create an offer, check if it fits pricingItem requirements and send Advance to treasury
-
-calls \_checkParams and returns Error if params don't fit with the pricingID
-only `Owner` can create a new offer
-emits OfferCreated event
-send Advance Amount to treasury
-
-#### `reserveRefund(uint256 offerId, uint256 dueDate, uint16 lateFee)` (public)
-
-Send the reserve Refund to the treasury
-
-checks if Offer exists and if not refunded yet
-only `Owner` can call reserveRefund
-emits OfferReserveRefunded event
+<a name="license"></a>
+## 3. License 
